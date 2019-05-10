@@ -6,6 +6,7 @@ pub enum Instruction<'a> {
         filename: Cow<'a, Path>,
         contents: Cow<'a, [u8]>,
     },
+
     CreateFolder {
         folder: Cow<'a, Path>,
     },

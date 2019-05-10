@@ -310,6 +310,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "rbx_reflection"
+version = "2.0.377"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "bitflags 1.0.4 (registry+https://github.com/rust-lang/crates.io-index)",
+ "failure 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "lazy_static 1.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rbx_dom_weak 1.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "rbx_xml"
 version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -328,8 +339,10 @@ dependencies = [
 name = "rbxlx-to-rojo"
 version = "0.1.0"
 dependencies = [
+ "lazy_static 1.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "pretty_assertions 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "rbx_dom_weak 1.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rbx_reflection 2.0.377 (registry+https://github.com/rust-lang/crates.io-index)",
  "rbx_xml 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.91 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_json 1.0.39 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -479,6 +492,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum rand_pcg 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "abf9b09b01790cfe0364f52bf32995ea3c39f4d2dd011eac241d2914146d0b44"
 "checksum rand_xorshift 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "cbf7e9e623549b0e21f6e97cf8ecf247c1a8fd2e8a992ae265314300b2455d5c"
 "checksum rbx_dom_weak 1.5.0 (registry+https://github.com/rust-lang/crates.io-index)" = "f8abb476e3252ecd181bc209c52f3d3d97eb7b97fa8739aa5339582eee252c27"
+"checksum rbx_reflection 2.0.377 (registry+https://github.com/rust-lang/crates.io-index)" = "21ba49260081530590ee48dd1ce6014ac5abc79f581ccb4be0626d436af59e92"
 "checksum rbx_xml 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)" = "891a97bd72d0c6847fe624e724ff3080e3369de74e4ef3b3dab07c6d8ce2bc23"
 "checksum rdrand 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "678054eb77286b51581ba43620cc911abf02758c91f93f479767aed0f90458b2"
 "checksum rustc-demangle 0.1.14 (registry+https://github.com/rust-lang/crates.io-index)" = "ccc78bfd5acd7bf3e89cffcf899e5cb1a52d6fafa8dec2739ad70c9577a57288"

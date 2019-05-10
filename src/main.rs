@@ -1,6 +1,9 @@
-use rbx_dom_weak::{RbxInstance, RbxTree, RbxValue};
+use lazy_static::lazy_static;
+use rbx_dom_weak::{RbxInstance, RbxInstanceProperties, RbxTree, RbxValue, RbxValueConversion};
+use rbx_reflection::RbxInstanceClass;
 use std::{
     borrow::Cow,
+    collections::HashMap,
     path::{Path, PathBuf},
 };
 use structures::*;
@@ -9,6 +12,11 @@ mod structures;
 
 #[cfg(test)]
 mod tests;
+
+lazy_static! {
+    static ref CLASSES: &'static HashMap<&'static str, RbxInstanceClass> =
+        rbx_reflection::get_classes();
+}
 
 #[derive(Debug)]
 enum Error {
@@ -21,10 +29,20 @@ struct TreeIterator<'a, I: InstructionReader + ?Sized> {
     tree: &'a RbxTree,
 }
 
+fn is_default_property(key: &str, value: &RbxValue) -> bool {
+    match key {
+        "Tags" => match value {
+            RbxValue::BinaryString { value } => value.is_empty(),
+            _ => false,
+        },
+
+        _ => false,
+    }
+}
+
 fn repr_instance<'a>(
     base: &'a Path,
     child: &'a RbxInstance,
-    tree: &'a RbxTree,
 ) -> Result<(Vec<Instruction<'a>>, Cow<'a, Path>), Error> {
     match child.class_name.as_str() {
         "Folder" => {
@@ -64,7 +82,9 @@ fn repr_instance<'a>(
                             folder: folder_path.clone(),
                         },
                         Instruction::CreateFile {
-                            filename: Cow::Owned(folder_path.join(format!("init{}.lua", extension))),
+                            filename: Cow::Owned(
+                                folder_path.join(format!("init{}.lua", extension)),
+                            ),
                             contents: Cow::Borrowed(source),
                         },
                     ],
@@ -73,18 +93,63 @@ fn repr_instance<'a>(
             }
         }
 
-        _ => {
+        other_class => {
             // When all else fails, we can *probably* make an rbxmx out of it
+            let mut tree = RbxTree::new(RbxInstanceProperties {
+                name: "VirtualInstance".to_string(),
+                class_name: "DataModel".to_string(),
+                properties: HashMap::new(),
+            });
+
+            let properties = match CLASSES.get(other_class) {
+                Some(reflected) => {
+                    let mut patch = child.clone();
+                    patch.properties.retain(|key, value| {
+                        if is_default_property(key, value) {
+                            return false;
+                        }
+
+                        if let Some(default) = reflected.default_properties.get(key.as_str()) {
+                            match default.try_convert_ref(value.get_type()) {
+                                RbxValueConversion::Converted(converted) => &converted != value,
+                                RbxValueConversion::Unnecessary => default != value,
+                                RbxValueConversion::Failed => {
+                                    println!("property type in reflection doesnt match given? {} expects {:?}, given {:?}", key, default.get_type(), value.get_type());
+                                    true
+                                },
+                            }
+                        } else {
+                            println!("property not in reflection? {}.{}", other_class, key);
+                            true
+                        }
+                    });
+                    Cow::Owned(patch.properties.drain().collect())
+                }
+
+                None => {
+                    println!("class is not in reflection? {}", other_class);
+                    Cow::Borrowed(&child.properties)
+                }
+            }
+            .into_owned();
+
+            let properties = RbxInstanceProperties {
+                name: child.name.clone(),
+                class_name: other_class.to_string(),
+                properties,
+            };
+
+            let root_id = tree.get_root_id();
+            let id = tree.insert_instance(properties, root_id);
+
             let mut buffer = Vec::new();
-            rbx_xml::encode(tree, &[child.get_id()], &mut buffer).map_err(Error::XmlEncodeError)?;
+            rbx_xml::encode(&tree, &[id], &mut buffer).map_err(Error::XmlEncodeError)?;
             Ok((
-                vec![
-                    Instruction::CreateFile {
-                        filename: Cow::Owned(base.join(&format!("{}.rbxmx", child.name))),
-                        contents: Cow::Owned(buffer),
-                    },
-                ],
-                Cow::Borrowed(base)
+                vec![Instruction::CreateFile {
+                    filename: Cow::Owned(base.join(&format!("{}.rbxmx", child.name))),
+                    contents: Cow::Owned(buffer),
+                }],
+                Cow::Borrowed(base),
             ))
         }
     }
@@ -97,7 +162,8 @@ impl<'a, I: InstructionReader + ?Sized> TreeIterator<'a, I> {
                 .tree
                 .get_instance(*child_id)
                 .expect("got fake child id?");
-            let (instructions_to_create_base, path) = repr_instance(&self.path, child, &self.tree).expect("an error occurred when trying to represent an instance");
+            let (instructions_to_create_base, path) = repr_instance(&self.path, child)
+                .expect("an error occurred when trying to represent an instance");
             self.instruction_reader
                 .read_instructions(instructions_to_create_base);
             TreeIterator {

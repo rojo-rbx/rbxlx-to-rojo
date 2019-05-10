@@ -1,22 +1,32 @@
 use crate::{process_instructions, structures::*};
 use pretty_assertions::assert_eq;
-use rbx_dom_weak::{RbxInstanceProperties, RbxTree};
+use rbx_dom_weak::{RbxInstance, RbxInstanceProperties, RbxTree};
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, fs};
 
-#[derive(Deserialize, Serialize, Debug, Eq, PartialEq)]
+// #[derive(Deserialize, Serialize, Debug, PartialEq)]
+// struct VirtualInstance(RbxInstance);
+
+// impl PartialEq<VirtualInstance> for VirtualInstance {
+// 	fn eq(&self, other: &VirtualInstance) -> bool {
+// 		self.properties == other.properties
+// 	}
+// }
+
+#[derive(Deserialize, Serialize, Debug, PartialEq)]
 #[serde(untagged)]
 enum VirtualFileContents {
     Bytes(String),
+    Instance(RbxInstanceProperties),
     Vfs(VirtualFileSystem),
 }
 
-#[derive(Deserialize, Serialize, Debug, Eq, PartialEq)]
+#[derive(Deserialize, Serialize, Debug, PartialEq)]
 struct VirtualFile {
     contents: VirtualFileContents,
 }
 
-#[derive(Deserialize, Serialize, Debug, Eq, PartialEq, Default)]
+#[derive(Deserialize, Serialize, Debug, PartialEq, Default)]
 struct VirtualFileSystem {
     files: HashMap<String, VirtualFile>,
 }
@@ -42,17 +52,33 @@ impl InstructionReader for VirtualFileSystem {
                     .unwrap_or_else(|| panic!("no folder for {:?}", parent))
                     .contents
                 {
-                    VirtualFileContents::Bytes(_) => unreachable!("attempt to parent to a file"),
                     VirtualFileContents::Vfs(ref mut system) => {
+                        let contents_string = String::from_utf8_lossy(&contents).into_owned();
+                        let rbxmx = filename.ends_with(".rbxmx");
                         system.files.insert(
                             filename,
                             VirtualFile {
-                                contents: VirtualFileContents::Bytes(
-                                    String::from_utf8_lossy(&contents).into_owned(),
-                                ),
+                                contents: if rbxmx {
+                                    let mut tree = RbxTree::new(RbxInstanceProperties {
+                                        name: "VirtualInstance".to_string(),
+                                        class_name: "DataModel".to_string(),
+                                        properties: HashMap::new(),
+                                    });
+
+                                    let root_id = tree.get_root_id();
+                                    rbx_xml::decode_str(&mut tree, root_id, &contents_string)
+                                        .expect("couldn't decode encoded xml");
+                                    let child_id =
+                                        tree.get_instance(root_id).unwrap().get_children_ids()[0];
+									let child_instance = tree.get_instance(child_id).unwrap().clone();
+                                    VirtualFileContents::Instance((*child_instance).clone())
+                                } else {
+                                    VirtualFileContents::Bytes(contents_string)
+                                },
                             },
                         );
                     }
+                    _ => unreachable!("attempt to parent to a file"),
                 }
             }
 

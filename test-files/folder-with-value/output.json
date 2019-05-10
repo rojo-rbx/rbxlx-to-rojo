@@ -4,7 +4,11 @@
       "contents": {
         "files": {
           "Value.rbxmx": {
-            "contents": "<roblox version=\"4\">\n  <Item class=\"NumberValue\" referent=\"0\">\n    <Properties>\n      <string name=\"Name\">Value</string>\n      <double name=\"Value\">0</double>\n      <BinaryString name=\"Tags\"><![CDATA[]]></BinaryString>\n    </Properties>\n  </Item>\n</roblox>"
+            "contents": {
+              "Name": "Value",
+              "ClassName": "NumberValue",
+              "Properties": {}
+            }
           }
         }
       }

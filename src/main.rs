@@ -8,6 +8,7 @@ use std::{
 };
 use structures::*;
 
+mod filesystem;
 mod structures;
 
 #[cfg(test)]
@@ -176,7 +177,7 @@ impl<'a, I: InstructionReader + ?Sized> TreeIterator<'a, I> {
     }
 }
 
-pub fn process_instructions(tree: RbxTree, instruction_reader: &mut InstructionReader) {
+pub fn process_instructions(tree: &RbxTree, instruction_reader: &mut InstructionReader) {
     let root = tree.get_root_id();
     let root_instance = tree.get_instance(root).expect("fake root id?");
     let path = PathBuf::new();
@@ -184,7 +185,7 @@ pub fn process_instructions(tree: RbxTree, instruction_reader: &mut InstructionR
     TreeIterator {
         instruction_reader,
         path: &path,
-        tree: &tree,
+        tree,
     }
     .visit_instructions(&root_instance);
 }

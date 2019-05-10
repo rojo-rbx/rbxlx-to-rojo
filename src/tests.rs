@@ -1,8 +1,12 @@
-use crate::{process_instructions, structures::*};
+use crate::{
+	process_instructions,
+	filesystem::FileSystem,
+	structures::*,
+};
 use pretty_assertions::assert_eq;
-use rbx_dom_weak::{RbxInstance, RbxInstanceProperties, RbxTree};
+use rbx_dom_weak::{RbxInstanceProperties, RbxTree};
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, fs};
+use std::{collections::HashMap, fs, io::ErrorKind};
 
 // #[derive(Deserialize, Serialize, Debug, PartialEq)]
 // struct VirtualInstance(RbxInstance);
@@ -33,9 +37,8 @@ struct VirtualFileSystem {
 
 impl InstructionReader for VirtualFileSystem {
     fn read_instruction<'a>(&mut self, instruction: Instruction<'a>) {
-        use Instruction::*;
         match instruction {
-            CreateFile { filename, contents } => {
+            Instruction::CreateFile { filename, contents } => {
                 let parent = filename
                     .parent()
                     .expect("no parent?")
@@ -83,7 +86,7 @@ impl InstructionReader for VirtualFileSystem {
                 }
             }
 
-            CreateFolder { folder } => {
+            Instruction::CreateFolder { folder } => {
                 let name = folder.to_string_lossy().into_owned();
                 self.files.insert(
                     name,
@@ -119,7 +122,7 @@ fn run_tests() {
             .expect("couldn't deserialize source.rbxmx");
 
         let mut vfs = VirtualFileSystem::default();
-        process_instructions(tree, &mut vfs);
+        process_instructions(&tree, &mut vfs);
 
         let mut expected_path = path.clone();
         expected_path.push("output.json");
@@ -133,5 +136,15 @@ fn run_tests() {
             let output = serde_json::to_string_pretty(&vfs).unwrap();
             fs::write(&expected_path, output).expect("couldn't write to output.json");
         }
+
+		let filesystem_path = path.join("filesystem");
+		if let Err(error) = fs::remove_dir_all(&filesystem_path) {
+			match error.kind() {
+				ErrorKind::NotFound => {},
+				other => panic!("couldn't remove filesystem dir: {:?}", other),
+			}
+		}
+		let mut filesystem = FileSystem::from_root(filesystem_path);
+		process_instructions(&tree, &mut filesystem);
     }
 }

@@ -67,7 +67,6 @@ impl InstructionReader for VirtualFileSystem {
                     },
                 );
             }
-            unknown => unimplemented!("unimplemented instruction {:?}", unknown),
         }
     }
 }

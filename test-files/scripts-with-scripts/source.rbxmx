@@ -1,0 +1,81 @@
+<roblox xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.roblox.com/roblox.xsd" version="4">
+	<Meta name="ExplicitAutoJoints">true</Meta>
+	<External>null</External>
+	<External>nil</External>
+	<Item class="Folder" referent="RBXFDA1D8D0D0D842C4A9247F5109DE2297">
+		<Properties>
+			<string name="Name">Folder</string>
+			<BinaryString name="Tags"></BinaryString>
+		</Properties>
+		<Item class="Script" referent="RBX0CBC122FDD314706A3106BAE2BDC4D32">
+			<Properties>
+				<bool name="Disabled">false</bool>
+				<Content name="LinkedSource"><null></null></Content>
+				<string name="Name">Script</string>
+				<string name="ScriptGuid">{B0DD0F2C-2569-47B0-B797-66681C85D9F1}</string>
+				<ProtectedString name="Source"><![CDATA[print("Hello world!")
+]]></ProtectedString>
+				<BinaryString name="Tags"></BinaryString>
+			</Properties>
+			<Item class="ModuleScript" referent="RBX198EAB11FAAF483890B30B0924F41C50">
+				<Properties>
+					<Content name="LinkedSource"><null></null></Content>
+					<string name="Name">ModuleScript</string>
+					<string name="ScriptGuid">{CD71BBE2-9D03-436D-B199-F6225C67FB54}</string>
+					<ProtectedString name="Source"><![CDATA[local module = {}
+
+return module
+]]></ProtectedString>
+					<BinaryString name="Tags"></BinaryString>
+				</Properties>
+			</Item>
+		</Item>
+		<Item class="LocalScript" referent="RBXF4B9564851A845EBA7859F106AFF236D">
+			<Properties>
+				<bool name="Disabled">false</bool>
+				<Content name="LinkedSource"><null></null></Content>
+				<string name="Name">LocalScript</string>
+				<string name="ScriptGuid">{8149C154-2D8E-4503-929C-4C7BEE698293}</string>
+				<ProtectedString name="Source"><![CDATA[print("Hello world!")
+]]></ProtectedString>
+				<BinaryString name="Tags"></BinaryString>
+			</Properties>
+			<Item class="ModuleScript" referent="RBX9F97251421184F96953171D8C3382289">
+				<Properties>
+					<Content name="LinkedSource"><null></null></Content>
+					<string name="Name">ModuleScript</string>
+					<string name="ScriptGuid">{907BB07E-E007-46C6-AD5B-7BE1099A8DA0}</string>
+					<ProtectedString name="Source"><![CDATA[local module = {}
+
+return module
+]]></ProtectedString>
+					<BinaryString name="Tags"></BinaryString>
+				</Properties>
+			</Item>
+		</Item>
+		<Item class="ModuleScript" referent="RBX8853BBF548FD4E45B970C38B209D1307">
+			<Properties>
+				<Content name="LinkedSource"><null></null></Content>
+				<string name="Name">ModuleScript</string>
+				<string name="ScriptGuid">{19C0DE6B-ACB2-4C75-B123-252FCF6869DD}</string>
+				<ProtectedString name="Source"><![CDATA[local module = {}
+
+return module
+]]></ProtectedString>
+				<BinaryString name="Tags"></BinaryString>
+			</Properties>
+			<Item class="ModuleScript" referent="RBXAB6AEE03F134471ABBB8DDCB074C4ACF">
+				<Properties>
+					<Content name="LinkedSource"><null></null></Content>
+					<string name="Name">ModuleScript</string>
+					<string name="ScriptGuid">{3F713ACB-2A6B-4DFE-BD9D-EE2EFA395256}</string>
+					<ProtectedString name="Source"><![CDATA[local module = {}
+
+return module
+]]></ProtectedString>
+					<BinaryString name="Tags"></BinaryString>
+				</Properties>
+			</Item>
+		</Item>
+	</Item>
+</roblox>

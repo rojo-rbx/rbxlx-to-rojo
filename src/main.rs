@@ -58,7 +58,7 @@ fn repr_instance<'a>(
                             folder: folder_path.clone(),
                         },
                         Instruction::CreateFile {
-                            filename: Cow::Owned(base.join(format!("init{}.lua", extension))),
+                            filename: Cow::Owned(folder_path.join(format!("init{}.lua", extension))),
                             contents: source,
                         },
                     ],

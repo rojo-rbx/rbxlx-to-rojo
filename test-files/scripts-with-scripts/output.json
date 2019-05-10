@@ -1,0 +1,45 @@
+{
+  "files": {
+    "Folder": {
+      "contents": {
+        "files": {}
+      }
+    },
+    "Folder/ModuleScript": {
+      "contents": {
+        "files": {
+          "ModuleScript.lua": {
+            "contents": "local module = {}\n\nreturn module\n"
+          },
+          "init.lua": {
+            "contents": "local module = {}\n\nreturn module\n"
+          }
+        }
+      }
+    },
+    "Folder/LocalScript": {
+      "contents": {
+        "files": {
+          "ModuleScript.lua": {
+            "contents": "local module = {}\n\nreturn module\n"
+          },
+          "init.client.lua": {
+            "contents": "print(\"Hello world!\")\n"
+          }
+        }
+      }
+    },
+    "Folder/Script": {
+      "contents": {
+        "files": {
+          "ModuleScript.lua": {
+            "contents": "local module = {}\n\nreturn module\n"
+          },
+          "init.server.lua": {
+            "contents": "print(\"Hello world!\")\n"
+          }
+        }
+      }
+    }
+  }
+}

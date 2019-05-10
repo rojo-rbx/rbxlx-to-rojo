@@ -1,0 +1,18 @@
+<roblox xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.roblox.com/roblox.xsd" version="4">
+	<Meta name="ExplicitAutoJoints">true</Meta>
+	<External>null</External>
+	<External>nil</External>
+	<Item class="Folder" referent="RBXD0831A903F4544ADB15E180A8A6EF8FB">
+		<Properties>
+			<string name="Name">Folder</string>
+			<BinaryString name="Tags"></BinaryString>
+		</Properties>
+		<Item class="NumberValue" referent="RBX67E0114EE81B4A31A2C1B151A66E578B">
+			<Properties>
+				<string name="Name">Value</string>
+				<BinaryString name="Tags"></BinaryString>
+				<double name="Value">0</double>
+			</Properties>
+		</Item>
+	</Item>
+</roblox>

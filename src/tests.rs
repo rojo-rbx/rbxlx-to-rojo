@@ -48,7 +48,7 @@ impl InstructionReader for VirtualFileSystem {
                             filename,
                             VirtualFile {
                                 contents: VirtualFileContents::Bytes(
-                                    String::from_utf8_lossy(contents).into_owned(),
+                                    String::from_utf8_lossy(&contents).into_owned(),
                                 ),
                             },
                         );

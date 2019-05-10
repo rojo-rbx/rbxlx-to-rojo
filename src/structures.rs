@@ -4,7 +4,7 @@ use std::{borrow::Cow, path::Path};
 pub enum Instruction<'a> {
     CreateFile {
         filename: Cow<'a, Path>,
-        contents: &'a [u8],
+        contents: Cow<'a, [u8]>,
     },
     CreateFolder {
         folder: Cow<'a, Path>,

@@ -1,0 +1,19 @@
+{
+  "files": {
+    "Folder": {
+      "contents": {
+        "files": {
+          "Script.server.lua": {
+            "contents": "print(\"Hello world!\")\n"
+          },
+          "ModuleScript.lua": {
+            "contents": "local module = {}\n\nreturn module\n"
+          },
+          "LocalScript.client.lua": {
+            "contents": "print(\"Hello world!\")\n"
+          }
+        }
+      }
+    }
+  }
+}

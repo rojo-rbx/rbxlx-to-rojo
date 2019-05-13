@@ -1,11 +1,13 @@
-use lazy_static::lazy_static;
+use log::{debug, info};
 use rbx_dom_weak::{RbxInstance, RbxInstanceProperties, RbxTree, RbxValue, RbxValueConversion};
-use rbx_reflection::RbxInstanceClass;
 use std::{
     borrow::Cow,
     collections::HashMap,
+    fs,
     path::{Path, PathBuf},
 };
+
+use filesystem::FileSystem;
 use structures::*;
 
 mod filesystem;
@@ -13,11 +15,6 @@ mod structures;
 
 #[cfg(test)]
 mod tests;
-
-lazy_static! {
-    static ref CLASSES: &'static HashMap<&'static str, RbxInstanceClass> =
-        rbx_reflection::get_classes();
-}
 
 #[derive(Debug)]
 enum Error {
@@ -102,7 +99,7 @@ fn repr_instance<'a>(
                 properties: HashMap::new(),
             });
 
-            let properties = match CLASSES.get(other_class) {
+            let properties = match rbx_reflection::get_class_descriptor(other_class) {
                 Some(reflected) => {
                     let mut patch = child.clone();
                     patch.properties.retain(|key, value| {
@@ -110,17 +107,17 @@ fn repr_instance<'a>(
                             return false;
                         }
 
-                        if let Some(default) = reflected.default_properties.get(key.as_str()) {
+                        if let Some(default) = reflected.get_default_value(key.as_str()) {
                             match default.try_convert_ref(value.get_type()) {
                                 RbxValueConversion::Converted(converted) => &converted != value,
                                 RbxValueConversion::Unnecessary => default != value,
                                 RbxValueConversion::Failed => {
-                                    println!("property type in reflection doesnt match given? {} expects {:?}, given {:?}", key, default.get_type(), value.get_type());
+                                    debug!("property type in reflection doesnt match given? {} expects {:?}, given {:?}", key, default.get_type(), value.get_type());
                                     true
                                 },
                             }
                         } else {
-                            println!("property not in reflection? {}.{}", other_class, key);
+                            debug!("property not in reflection? {}.{}", other_class, key);
                             true
                         }
                     });
@@ -128,7 +125,7 @@ fn repr_instance<'a>(
                 }
 
                 None => {
-                    println!("class is not in reflection? {}", other_class);
+                    debug!("class is not in reflection? {}", other_class);
                     Cow::Borrowed(&child.properties)
                 }
             }
@@ -144,7 +141,7 @@ fn repr_instance<'a>(
             let id = tree.insert_instance(properties, root_id);
 
             let mut buffer = Vec::new();
-            rbx_xml::encode(&tree, &[id], &mut buffer).map_err(Error::XmlEncodeError)?;
+            rbx_xml::to_writer_default(&mut buffer, &tree, &[id]).map_err(Error::XmlEncodeError)?;
             Ok((
                 vec![Instruction::CreateFile {
                     filename: Cow::Owned(base.join(&format!("{}.rbxmx", child.name))),
@@ -191,5 +188,18 @@ pub fn process_instructions(tree: &RbxTree, instruction_reader: &mut Instruction
 }
 
 fn main() {
-    println!("rbxlx-to-rojo {}", env!("CARGO_PKG_VERSION"));
+    env_logger::init();
+
+    info!("rbxlx-to-rojo {}", env!("CARGO_PKG_VERSION"));
+    let rbxlx_path = std::env::args()
+        .nth(1)
+        .expect("invalid arguments - ./rbxlx-to-rojo place.rbxlx");
+    let rbxlx_source = fs::read_to_string(&rbxlx_path).expect("couldn't read rbxlx file");
+    let root = std::env::args().nth(2).unwrap_or_else(|| ".".to_string());
+    let mut filesystem = FileSystem::from_root(root.into());
+    let tree = rbx_xml::from_str_default(&rbxlx_source).expect("couldn't deserialize rbxlx");
+
+    info!("processing");
+    process_instructions(&tree, &mut filesystem);
+    info!("done");
 }

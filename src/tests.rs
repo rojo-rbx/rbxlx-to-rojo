@@ -1,10 +1,6 @@
-use crate::{
-	process_instructions,
-	filesystem::FileSystem,
-	structures::*,
-};
+use crate::{filesystem::FileSystem, process_instructions, structures::*};
 use pretty_assertions::assert_eq;
-use rbx_dom_weak::{RbxInstanceProperties, RbxTree};
+use rbx_dom_weak::RbxInstanceProperties;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, fs, io::ErrorKind};
 
@@ -49,41 +45,41 @@ impl InstructionReader for VirtualFileSystem {
                     .expect("no filename?")
                     .to_string_lossy()
                     .into_owned();
-                match self
-                    .files
-                    .get_mut(&parent)
-                    .unwrap_or_else(|| panic!("no folder for {:?}", parent))
-                    .contents
-                {
-                    VirtualFileContents::Vfs(ref mut system) => {
-                        let contents_string = String::from_utf8_lossy(&contents).into_owned();
-                        let rbxmx = filename.ends_with(".rbxmx");
-                        system.files.insert(
-                            filename,
-                            VirtualFile {
-                                contents: if rbxmx {
-                                    let mut tree = RbxTree::new(RbxInstanceProperties {
-                                        name: "VirtualInstance".to_string(),
-                                        class_name: "DataModel".to_string(),
-                                        properties: HashMap::new(),
-                                    });
 
-                                    let root_id = tree.get_root_id();
-                                    rbx_xml::decode_str(&mut tree, root_id, &contents_string)
-                                        .expect("couldn't decode encoded xml");
-                                    let child_id =
-                                        tree.get_instance(root_id).unwrap().get_children_ids()[0];
-                                    let child_instance =
-                                        tree.get_instance(child_id).unwrap().clone();
-                                    VirtualFileContents::Instance((*child_instance).clone())
-                                } else {
-                                    VirtualFileContents::Bytes(contents_string)
-                                },
-                            },
-                        );
+                let system = if parent == "" {
+                    self
+                } else {
+                    match self
+                        .files
+                        .get_mut(&parent)
+                        .unwrap_or_else(|| panic!("no folder for {:?}", parent))
+                        .contents
+                    {
+                        VirtualFileContents::Vfs(ref mut system) => system,
+                        _ => unreachable!("attempt to parent to a file"),
                     }
-                    _ => unreachable!("attempt to parent to a file"),
-                }
+                };
+
+                let contents_string = String::from_utf8_lossy(&contents).into_owned();
+                let rbxmx = filename.ends_with(".rbxmx");
+                system.files.insert(
+                    filename,
+                    VirtualFile {
+                        contents: if rbxmx {
+                            let tree = rbx_xml::from_str_default(&contents_string)
+                                .expect("couldn't decode encoded xml");
+                            let child_id = tree
+                                .get_instance(tree.get_root_id())
+                                .unwrap()
+                                .get_children_ids()[0];
+                            let child_instance =
+                                tree.get_instance(child_id).unwrap().clone();
+                            VirtualFileContents::Instance((*child_instance).clone())
+                        } else {
+                            VirtualFileContents::Bytes(contents_string)
+                        },
+                    },
+                );
             }
 
             Instruction::CreateFolder { folder } => {
@@ -111,15 +107,7 @@ fn run_tests() {
         source_path.push("source.rbxmx");
         let source = fs::read_to_string(&source_path).expect("couldn't read source.rbxmx");
 
-        let mut tree = RbxTree::new(RbxInstanceProperties {
-            name: "DataModel".to_string(),
-            class_name: "DataModel".to_string(),
-            properties: HashMap::new(),
-        });
-
-        let root_id = tree.get_root_id();
-        rbx_xml::decode_str(&mut tree, root_id, &source)
-            .expect("couldn't deserialize source.rbxmx");
+        let tree = rbx_xml::from_str_default(&source).expect("couldn't deserialize source.rbxmx");
 
         let mut vfs = VirtualFileSystem::default();
         process_instructions(&tree, &mut vfs);
@@ -137,14 +125,14 @@ fn run_tests() {
             fs::write(&expected_path, output).expect("couldn't write to output.json");
         }
 
-		let filesystem_path = path.join("filesystem");
-		if let Err(error) = fs::remove_dir_all(&filesystem_path) {
-			match error.kind() {
-				ErrorKind::NotFound => {},
-				other => panic!("couldn't remove filesystem dir: {:?}", other),
-			}
-		}
-		let mut filesystem = FileSystem::from_root(filesystem_path);
-		process_instructions(&tree, &mut filesystem);
+        let filesystem_path = path.join("filesystem");
+        if let Err(error) = fs::remove_dir_all(&filesystem_path) {
+            match error.kind() {
+                ErrorKind::NotFound => {}
+                other => panic!("couldn't remove filesystem dir: {:?}", other),
+            }
+        }
+        let mut filesystem = FileSystem::from_root(filesystem_path);
+        process_instructions(&tree, &mut filesystem);
     }
 }

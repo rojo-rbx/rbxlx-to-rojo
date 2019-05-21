@@ -21,6 +21,7 @@ struct VirtualFile {
 struct VirtualFileSystem {
     files: HashMap<String, VirtualFile>,
     tree: HashMap<String, TreePartition>,
+    #[serde(skip)]
     finished: bool,
 }
 

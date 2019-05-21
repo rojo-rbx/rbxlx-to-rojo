@@ -227,6 +227,8 @@ pub fn process_instructions(tree: &RbxTree, instruction_reader: &mut Instruction
         tree,
     }
     .visit_instructions(&root_instance);
+
+    instruction_reader.finish_instructions();
 }
 
 fn main() {

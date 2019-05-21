@@ -1,0 +1,799 @@
+<roblox xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.roblox.com/roblox.xsd" version="4">
+	<External>null</External>
+	<External>nil</External>
+	<Item class="Geometry" referent="RBX961DB9CC9E124B789A08344B2465CA9D">
+		<Properties>
+			<string name="Name">Geometry</string>
+			<BinaryString name="Tags"></BinaryString>
+		</Properties>
+		<Item class="Folder" referent="RBX61BE2530DA6D48B5B640BF0E715FF221">
+			<Properties>
+				<string name="Name">FriendCache</string>
+				<BinaryString name="Tags"></BinaryString>
+			</Properties>
+			<Item class="Folder" referent="RBXD25F54253B80418DAE62FA3A2D5DE1FF">
+				<Properties>
+					<string name="Name">56140227</string>
+					<BinaryString name="Tags"></BinaryString>
+				</Properties>
+				<Item class="IntValue" referent="RBX71F9F4BBF9AB490EB4EAD0107BCA48AF">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">195613943</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX23E68F82B7C44827AA9E7AF21DFD7F0E">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">138408</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX439A51FA702C40FBB855DB902D18A00A">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">86162827</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBXED8A00C2ECB242ED9C1C644E44BBB1A6">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">517392561</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX9318829F32C840CAB4397C6F9F27291A">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">2032622</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBXE709CC85EBDF404D983264518ADA4660">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">2341355</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBXC9C9DA9D4C7B415D9ACF7B0ADD129928">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">311526151</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX3D3F62B50715457DA4E4F4D944FFCC5C">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">573827717</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX490ED4A77DDF46038A349501D7E4B56C">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">13094490</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX127B6DFBC8CE4A7FA8AD7D3229C4D7E8">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">111308193</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX029D8B1BE5524E1E89A6008C9BCD6A9B">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">660149624</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX0AEC6865F86042F8BCAE8139683FAA15">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">3178149</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX5FF65F86222344758E3558D84CF2774E">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">23201729</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX6A105431B7E94BAB8F673F43E61820C2">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">6710154</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX9E1B1EE97A364DEB8A98F3CAC8129D7E">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">26432253</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX4D664A31710D47BBAF57B8B815D963E4">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">8403307</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX7D7A612BA0134AD1A012ACADBEA56ACD">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">21938546</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX19B3ED2639EE4ECA93E974642F351F3B">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">187668926</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX6E2381D67E19473CAADF7298D70A82BD">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">87203543</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBXB813BC3F0F6F4E0BB28305C233CD2A26">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">639323543</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX44C8CA0BA21E4E22AAC4417A96BC80E0">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">24346602</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBXA189F258BFBA45E78AEC0E28AB892E80">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">26266254</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX37825851F9BF44BF94D5ABFA71F32286">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">73223877</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX33A0117D613D486F91DC2E974D2AC5FD">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">242541676</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBXD2CE63A20F3140CE887ED651D20C08E8">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">121643</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX1B0FAA2A903C47ECAEB0583EB0DFC558">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">22938110</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX02BB20AADB2F4BB2BFEA9780ABD11B3F">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">35136426</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX2698131E3F544232A3B5BCE4D66AD80E">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">10314936</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX72232702090C4430BFE4199C1A70F059">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">17737079</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX62FD2ED2F10444B6AA4098CCBBE6314C">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">647386291</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBXF696261D6B244A77867F1EA8486349A7">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">51429227</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBXCAAF2E1D143A48EB806C67E5BF20B661">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">15823727</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX5DC720AEC5584641ADF1723514D9F96D">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">677565128</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX350A15F887F6482BBA4D681169198D6A">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">276198022</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX83E24DFE236B4114BEE71569D1CD5956">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">47248306</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBXD16C69DF3D4B452BA5A3117AE7277EBB">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">636332555</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX78D1FB679F8641EB85BB56393F508DB0">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">641860725</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX5BD02D4653D64DC1BB2467C13E78EEA5">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">636889000</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX5B3FB04473DF4B0CAF59ED400BCD96D5">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">636318768</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBXCF432F088AD143D79262B9954480CF1C">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">632541484</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBXC6F02054D47E4404803F4D21DC3D6B15">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">98573580</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBXAEC697AFEFF94FB0800ED554C159B5FB">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">44504376</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX5B7536F56D6A4665A59FEA12D1F93698">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">1922632</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBXBE2F60B4032448BCA8D85BFDAB946081">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">80906200</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX523218FF17DD4492A0AAD673CE94B206">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">110053659</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBXF23334F084F245FE9C6A1EC877D2CF56">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">941072</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBXB57D52DD19D04A15A781BE86BB37778C">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">53528191</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBXE39BBC7DB76540CEAA605F977B4CFD77">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">595718273</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX60644F95C20F4368992F0D68331AD259">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">96001</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX62CD0F74FA0E41D5BCA558898C9F5B51">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">8393409</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX81DD3613FDE5474EA65816AABED6F57B">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">1306819</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBXD410B3AFF6E74D8E82A47F69FB1C8841">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">627607</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBXDAD3A5D49E2944689D0812F092D7DD7F">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">2896450</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX5D521657663A43B7AE8CDDF367CBA7AD">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">57665287</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX15CE50C9A590469089AC3523C19247EC">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">82383231</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBXE0B83C2028FD4A5781BEE351D2A34C09">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">546660586</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX16C898A434E24AC189B67D8AF2FCE3A4">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">44309</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX5B790A853006406584ADA1F51FA2693F">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">490032145</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX9F9EE7686E7C48FAAB331C7FD250449C">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">464085376</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBXDBF2539194434DD1AA77E993789B264F">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">327533979</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX6CF12E6915F94B4DA49E73CD90BDDF57">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">18390582</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX48FDA658B4C140EF94855C6EDFE2E235">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">3596805</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX5A596860B65A4D2E8F2D5996A0A9BAF4">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">10086676</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBXC2D3290B256E478B94B59313DA663A53">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">8271998</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX1D04239B3D6D48E3A3906D425B079724">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">92451392</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX343CD2E18F8C4A119F01D69952651D48">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">48764983</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBXDE9A88D92632491AA58ECFC1DCDBD252">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">7695144</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBXD959D36B40F94817B92951F2E7DCF6B4">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">51730488</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBXA2772B6E112D46F1B249FFFE9E5EAD8D">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">15178310</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX811B0DD8BB4641209839425F96BEE64F">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">62996799</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX8AE0C0999B8441D9BB56C2A88A52786D">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">302682965</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBXFAB24F39E07944F28A4F89758D089345">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">36494882</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBXC95494ACB31743DEA4B28187D5E790FA">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">324206133</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBXBD31B9D1F7BB478CB8CDD05451092478">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">103860790</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX19094FC37C9F4FBB8F1A879375A50243">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">340666193</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX11EBB8503A644542B21430ED0797BAEE">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">336762324</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBXCB3A368ED26144E9A465357BBF680632">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">19204121</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBXB6B9862C914A43C4A13F0D2AFBFD1E5F">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">15949751</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBXAF34E9362FB54BEDADA9C8D1D08BAE8D">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">27979176</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX81D75FD3B14940DC9AA4D2F4086EDEC1">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">331073267</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX1096DCA221A34817AFA663BDDC9984FF">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">273882533</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX9509970460B34A61BF057CF5330D7A65">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">1558888</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX15EDFDA6A5284B028C2D78B9D4173B3B">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">53427446</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX05FDB0472FF544CB88DF096C83F836EA">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">47189013</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX494BBF2F2BD04047BB1A23C99FFBC966">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">283938388</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX54BB2A3A1B8D44EE9FA4702DF8053293">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">273865623</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX0C657D581443425790C24C94F0BD0ECA">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">29887280</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBXC05FACD24DA741ADB541D07B694D4C2F">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">47966663</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX39F252A601BF44B48F779FEE2266F99E">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">156036472</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBXABF1D6011998491E86886DDDD7304CB7">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">173088939</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBXB9E7EC380E464F40862FF381DE9E44F6">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">28063217</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBXCDD38721EF9340E1B08DD818CABAD108">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">2549236</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX284B0A502C8B47078964FB45950BEEA7">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">171890431</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX1BEEBD31D3D34E01BF24408C2B1D78CC">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">46914122</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX190A904B2F3644808607E51C8BAEE241">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">111431959</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBXD9110776A8AD49DBB336F37428770AF7">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">3564465</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBXD3245932833F46A3AC49ADF7B46D9C00">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">146604472</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX4287BF13E53748A6A46B8C4D1C96D906">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">138159515</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBXF5F251E0F091434E83803047E0A64FC9">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">145411601</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBXF6536C78BF7F4F4C810D31490491C2F2">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">2012357</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX2525C4F6520E4B03962D90A45A245225">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">896716</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX86044E2482334152913F49E81109E5BE">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">98858218</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX4FEE077133734E07BF277B5229C78AC8">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">1737165</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX102BCDCB4F064E4BAF03F341DC4F14DB">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">83043338</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX0CD15EDB8E5243359D53416968691013">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">24315058</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX83BC9A5C1E024D81A35F13BD4A34BA4E">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">4977291</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX230E701A0C664341943F9C3B20D7899A">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">2291518</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBXDAAEA5888C0D4AC4943DE40269D9BA38">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">17757496</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX57A0C8FE6FDE4533A82E0C6B87070E9A">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">747269</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBXFA54AB8884974715830C1594DDB06124">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">21393491</int64>
+					</Properties>
+				</Item>
+				<Item class="IntValue" referent="RBX3F2FD8FA465D49CBBCD6EAADFF866115">
+					<Properties>
+						<string name="Name">Value</string>
+						<BinaryString name="Tags"></BinaryString>
+						<int64 name="Value">8547498</int64>
+					</Properties>
+				</Item>
+			</Item>
+		</Item>
+	</Item>
+</roblox>

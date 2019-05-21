@@ -2,21 +2,27 @@
   "files": {
     "Folder": {
       "contents": {
-        "files": {
-          "Value.rbxmx": {
-            "contents": {
-              "Name": "Value",
-              "ClassName": "NumberValue",
-              "Properties": {
-                "Value": {
-                  "Type": "Float64",
-                  "Value": 2.0
+        "Vfs": {
+          "files": {
+            "Value.rbxmx": {
+              "contents": {
+                "Instance": {
+                  "Name": "Value",
+                  "ClassName": "NumberValue",
+                  "Properties": {
+                    "Value": {
+                      "Type": "Float64",
+                      "Value": 2.0
+                    }
+                  }
                 }
               }
             }
-          }
+          },
+          "tree": {}
         }
       }
     }
-  }
+  },
+  "tree": {}
 }

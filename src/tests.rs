@@ -1,20 +1,11 @@
 use crate::{filesystem::FileSystem, process_instructions, structures::*};
+use log::info;
 use pretty_assertions::assert_eq;
 use rbx_dom_weak::RbxInstanceProperties;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, fs, io::ErrorKind};
 
-// #[derive(Deserialize, Serialize, Debug, PartialEq)]
-// struct VirtualInstance(RbxInstance);
-
-// impl PartialEq<VirtualInstance> for VirtualInstance {
-// 	fn eq(&self, other: &VirtualInstance) -> bool {
-// 		self.properties == other.properties
-// 	}
-// }
-
 #[derive(Deserialize, Serialize, Debug, PartialEq)]
-#[serde(untagged)]
 enum VirtualFileContents {
     Bytes(String),
     Instance(RbxInstanceProperties),
@@ -26,14 +17,31 @@ struct VirtualFile {
     contents: VirtualFileContents,
 }
 
-#[derive(Deserialize, Serialize, Debug, PartialEq, Default)]
+#[derive(Deserialize, Serialize, Debug, Default)]
 struct VirtualFileSystem {
     files: HashMap<String, VirtualFile>,
+    tree: HashMap<String, TreePartition>,
+    #[serde(skip)]
+    finished: bool,
+}
+
+impl PartialEq<VirtualFileSystem> for VirtualFileSystem {
+    fn eq(&self, rhs: &VirtualFileSystem) -> bool {
+        self.files == rhs.files && self.tree == rhs.tree
+    }
 }
 
 impl InstructionReader for VirtualFileSystem {
+    fn finish_instructions(&mut self) {
+        self.finished = true;
+    }
+
     fn read_instruction<'a>(&mut self, instruction: Instruction<'a>) {
         match instruction {
+            Instruction::AddToTree { name, partition } => {
+                self.tree.insert(name, partition);
+            }
+
             Instruction::CreateFile { filename, contents } => {
                 let parent = filename
                     .parent()
@@ -72,8 +80,7 @@ impl InstructionReader for VirtualFileSystem {
                                 .get_instance(tree.get_root_id())
                                 .unwrap()
                                 .get_children_ids()[0];
-                            let child_instance =
-                                tree.get_instance(child_id).unwrap().clone();
+                            let child_instance = tree.get_instance(child_id).unwrap().clone();
                             VirtualFileContents::Instance((*child_instance).clone())
                         } else {
                             VirtualFileContents::Bytes(contents_string)
@@ -87,9 +94,7 @@ impl InstructionReader for VirtualFileSystem {
                 self.files.insert(
                     name,
                     VirtualFile {
-                        contents: VirtualFileContents::Vfs(VirtualFileSystem {
-                            files: HashMap::new(),
-                        }),
+                        contents: VirtualFileContents::Vfs(VirtualFileSystem::default()),
                     },
                 );
             }
@@ -99,9 +104,11 @@ impl InstructionReader for VirtualFileSystem {
 
 #[test]
 fn run_tests() {
+    let _ = env_logger::init();
     for entry in fs::read_dir("./test-files").expect("couldn't read test-files") {
         let entry = entry.unwrap();
         let path = entry.path();
+        info!("testing {:?}", path);
 
         let mut source_path = path.clone();
         source_path.push("source.rbxmx");
@@ -114,6 +121,7 @@ fn run_tests() {
 
         let mut expected_path = path.clone();
         expected_path.push("output.json");
+        assert!(vfs.finished, "finish_instructions was not called");
 
         if let Ok(expected) = fs::read_to_string(&expected_path) {
             assert_eq!(
@@ -132,6 +140,9 @@ fn run_tests() {
                 other => panic!("couldn't remove filesystem dir: {:?}", other),
             }
         }
+
+        fs::create_dir(&filesystem_path).unwrap();
+
         let mut filesystem = FileSystem::from_root(filesystem_path);
         process_instructions(&tree, &mut filesystem);
     }

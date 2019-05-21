@@ -1,8 +1,10 @@
-use log::{debug, info};
-use rbx_dom_weak::{RbxInstance, RbxInstanceProperties, RbxTree, RbxValue, RbxValueConversion};
+use log::{debug, info, warn};
+use rbx_dom_weak::{
+    RbxInstance, RbxInstanceProperties, RbxTree, RbxValue, RbxValueConversion, RbxValueType,
+};
 use std::{
     borrow::Cow,
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     fs,
     path::{Path, PathBuf},
 };
@@ -16,8 +18,13 @@ mod structures;
 #[cfg(test)]
 mod tests;
 
+lazy_static::lazy_static! {
+    static ref RESPECTED_SERVICES: HashSet<&'static str> = include_str!("./respected-services.txt").lines().collect();
+}
+
 #[derive(Debug)]
 enum Error {
+    ShouldntBeRepresented, // Empty services, services not officially respected
     XmlEncodeError(rbx_xml::EncodeError),
 }
 
@@ -101,9 +108,20 @@ fn repr_instance<'a>(
 
             let properties = match rbx_reflection::get_class_descriptor(other_class) {
                 Some(reflected) => {
+                    let treat_as_service = RESPECTED_SERVICES.contains(other_class);
+                    // Don't represent services not in respected-services
+                    if reflected.is_service() && !treat_as_service {
+                        return Err(Error::ShouldntBeRepresented);
+                    }
+
                     let mut patch = child.clone();
                     patch.properties.retain(|key, value| {
                         if is_default_property(key, value) {
+                            return false;
+                        }
+
+                        if value.get_type() == RbxValueType::Ref {
+                            warn!("rbxlx-to-rojo does not currently support Refs");
                             return false;
                         }
 
@@ -121,6 +139,24 @@ fn repr_instance<'a>(
                             true
                         }
                     });
+
+                    if treat_as_service {
+                        // Don't represent empty services with no property changes
+                        if patch.properties.is_empty() && child.get_children_ids().is_empty() {
+                            return Err(Error::ShouldntBeRepresented);
+                        }
+
+                        let new_base: Cow<'a, Path> = Cow::Owned(base.join(&child.name));
+                        let mut instructions = vec![Instruction::add_to_tree(patch, new_base.to_string_lossy().into_owned())];
+                        if !child.get_children_ids().is_empty() {
+                            instructions.push(Instruction::CreateFolder {
+                                folder: new_base.clone(),
+                            })
+                        }
+
+                        return Ok((instructions, new_base));
+                    }
+
                     Cow::Owned(patch.properties.drain().collect())
                 }
 
@@ -160,8 +196,14 @@ impl<'a, I: InstructionReader + ?Sized> TreeIterator<'a, I> {
                 .tree
                 .get_instance(*child_id)
                 .expect("got fake child id?");
-            let (instructions_to_create_base, path) = repr_instance(&self.path, child)
-                .expect("an error occurred when trying to represent an instance");
+            let (instructions_to_create_base, path) = match repr_instance(&self.path, child) {
+                Ok((instructions_to_create_base, path)) => (instructions_to_create_base, path),
+                Err(Error::ShouldntBeRepresented) => continue,
+                Err(other) => panic!(
+                    "an error occured when trying to represent an instance - {:?}",
+                    other
+                ),
+            };
             self.instruction_reader
                 .read_instructions(instructions_to_create_base);
             TreeIterator {
@@ -185,6 +227,8 @@ pub fn process_instructions(tree: &RbxTree, instruction_reader: &mut Instruction
         tree,
     }
     .visit_instructions(&root_instance);
+
+    instruction_reader.finish_instructions();
 }
 
 fn main() {

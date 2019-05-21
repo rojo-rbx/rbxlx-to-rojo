@@ -2,16 +2,22 @@
   "files": {
     "Folder": {
       "contents": {
-        "files": {
-          "Value.rbxmx": {
-            "contents": {
-              "Name": "Value",
-              "ClassName": "NumberValue",
-              "Properties": {}
+        "Vfs": {
+          "files": {
+            "Value.rbxmx": {
+              "contents": {
+                "Instance": {
+                  "Name": "Value",
+                  "ClassName": "NumberValue",
+                  "Properties": {}
+                }
+              }
             }
-          }
+          },
+          "tree": {}
         }
       }
     }
-  }
+  },
+  "tree": {}
 }

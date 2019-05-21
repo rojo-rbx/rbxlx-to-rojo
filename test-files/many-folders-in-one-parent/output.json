@@ -1,19 +1,29 @@
 {
   "files": {
-    "C": {
+    "B": {
       "contents": {
-        "files": {}
+        "Vfs": {
+          "files": {},
+          "tree": {}
+        }
       }
     },
     "A": {
       "contents": {
-        "files": {}
+        "Vfs": {
+          "files": {},
+          "tree": {}
+        }
       }
     },
-    "B": {
+    "C": {
       "contents": {
-        "files": {}
+        "Vfs": {
+          "files": {},
+          "tree": {}
+        }
       }
     }
-  }
+  },
+  "tree": {}
 }

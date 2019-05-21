@@ -2,18 +2,28 @@
   "files": {
     "Folder": {
       "contents": {
-        "files": {
-          "Script.server.lua": {
-            "contents": "print(\"Hello world!\")\n"
+        "Vfs": {
+          "files": {
+            "ModuleScript.lua": {
+              "contents": {
+                "Bytes": "local module = {}\n\nreturn module\n"
+              }
+            },
+            "Script.server.lua": {
+              "contents": {
+                "Bytes": "print(\"Hello world!\")\n"
+              }
+            },
+            "LocalScript.client.lua": {
+              "contents": {
+                "Bytes": "print(\"Hello world!\")\n"
+              }
+            }
           },
-          "ModuleScript.lua": {
-            "contents": "local module = {}\n\nreturn module\n"
-          },
-          "LocalScript.client.lua": {
-            "contents": "print(\"Hello world!\")\n"
-          }
+          "tree": {}
         }
       }
     }
-  }
+  },
+  "tree": {}
 }

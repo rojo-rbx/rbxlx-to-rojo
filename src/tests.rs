@@ -4,15 +4,6 @@ use rbx_dom_weak::RbxInstanceProperties;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, fs, io::ErrorKind};
 
-// #[derive(Deserialize, Serialize, Debug, PartialEq)]
-// struct VirtualInstance(RbxInstance);
-
-// impl PartialEq<VirtualInstance> for VirtualInstance {
-// 	fn eq(&self, other: &VirtualInstance) -> bool {
-// 		self.properties == other.properties
-// 	}
-// }
-
 #[derive(Deserialize, Serialize, Debug, PartialEq)]
 #[serde(untagged)]
 enum VirtualFileContents {
@@ -29,11 +20,16 @@ struct VirtualFile {
 #[derive(Deserialize, Serialize, Debug, PartialEq, Default)]
 struct VirtualFileSystem {
     files: HashMap<String, VirtualFile>,
+    tree: HashMap<String, TreePartition>,
 }
 
 impl InstructionReader for VirtualFileSystem {
     fn read_instruction<'a>(&mut self, instruction: Instruction<'a>) {
         match instruction {
+            Instruction::AddToTree { name, partition } => {
+                self.tree.insert(name, partition);
+            }
+
             Instruction::CreateFile { filename, contents } => {
                 let parent = filename
                     .parent()
@@ -72,8 +68,7 @@ impl InstructionReader for VirtualFileSystem {
                                 .get_instance(tree.get_root_id())
                                 .unwrap()
                                 .get_children_ids()[0];
-                            let child_instance =
-                                tree.get_instance(child_id).unwrap().clone();
+                            let child_instance = tree.get_instance(child_id).unwrap().clone();
                             VirtualFileContents::Instance((*child_instance).clone())
                         } else {
                             VirtualFileContents::Bytes(contents_string)
@@ -87,9 +82,7 @@ impl InstructionReader for VirtualFileSystem {
                 self.files.insert(
                     name,
                     VirtualFile {
-                        contents: VirtualFileContents::Vfs(VirtualFileSystem {
-                            files: HashMap::new(),
-                        }),
+                        contents: VirtualFileContents::Vfs(VirtualFileSystem::default()),
                     },
                 );
             }
@@ -99,6 +92,7 @@ impl InstructionReader for VirtualFileSystem {
 
 #[test]
 fn run_tests() {
+    let _ = env_logger::init();
     for entry in fs::read_dir("./test-files").expect("couldn't read test-files") {
         let entry = entry.unwrap();
         let path = entry.path();

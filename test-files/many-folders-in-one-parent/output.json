@@ -1,19 +1,23 @@
 {
   "files": {
-    "C": {
+    "B": {
       "contents": {
-        "files": {}
+        "files": {},
+        "tree": {}
       }
     },
     "A": {
       "contents": {
-        "files": {}
+        "files": {},
+        "tree": {}
       }
     },
-    "B": {
+    "C": {
       "contents": {
-        "files": {}
+        "files": {},
+        "tree": {}
       }
     }
-  }
+  },
+  "tree": {}
 }

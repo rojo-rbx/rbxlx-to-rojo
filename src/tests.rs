@@ -1,11 +1,11 @@
 use crate::{filesystem::FileSystem, process_instructions, structures::*};
+use log::info;
 use pretty_assertions::assert_eq;
 use rbx_dom_weak::RbxInstanceProperties;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, fs, io::ErrorKind};
 
 #[derive(Deserialize, Serialize, Debug, PartialEq)]
-#[serde(untagged)]
 enum VirtualFileContents {
     Bytes(String),
     Instance(RbxInstanceProperties),
@@ -21,9 +21,14 @@ struct VirtualFile {
 struct VirtualFileSystem {
     files: HashMap<String, VirtualFile>,
     tree: HashMap<String, TreePartition>,
+    finished: bool,
 }
 
 impl InstructionReader for VirtualFileSystem {
+    fn finish_instructions(&mut self) {
+        self.finished = true;
+    }
+
     fn read_instruction<'a>(&mut self, instruction: Instruction<'a>) {
         match instruction {
             Instruction::AddToTree { name, partition } => {
@@ -96,6 +101,7 @@ fn run_tests() {
     for entry in fs::read_dir("./test-files").expect("couldn't read test-files") {
         let entry = entry.unwrap();
         let path = entry.path();
+        info!("testing {:?}", path);
 
         let mut source_path = path.clone();
         source_path.push("source.rbxmx");
@@ -128,5 +134,6 @@ fn run_tests() {
         }
         let mut filesystem = FileSystem::from_root(filesystem_path);
         process_instructions(&tree, &mut filesystem);
+        assert!(vfs.finished, "finish_instructions was not called");
     }
 }

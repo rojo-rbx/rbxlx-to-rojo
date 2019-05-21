@@ -1,425 +1,458 @@
 {
   "files": {
-    "StarterPlayer": {
-      "contents": {
-        "files": {},
-        "tree": {}
-      }
-    },
     "Workspace": {
       "contents": {
-        "files": {
-          "Terrain.rbxmx": {
-            "contents": {
-              "Name": "Terrain",
-              "ClassName": "Terrain",
-              "Properties": {
-                "FrontSurface": {
-                  "Type": "Enum",
-                  "Value": 0
-                },
-                "FrontParamB": {
-                  "Type": "Float32",
-                  "Value": 0.5
-                },
-                "WaterWaveSize": {
-                  "Type": "Float32",
-                  "Value": 0.15
-                },
-                "Transparency": {
-                  "Type": "Float32",
-                  "Value": 0.0
-                },
-                "TopSurfaceInput": {
-                  "Type": "Enum",
-                  "Value": 0
-                },
-                "LeftParamA": {
-                  "Type": "Float32",
-                  "Value": -0.5
-                },
-                "TopParamA": {
-                  "Type": "Float32",
-                  "Value": -0.5
-                },
-                "CustomPhysicalProperties": {
-                  "Type": "PhysicalProperties",
-                  "Value": null
-                },
-                "CFrame": {
-                  "Type": "CFrame",
-                  "Value": [
-                    0.0,
-                    0.0,
-                    0.0,
-                    1.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    1.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    1.0
-                  ]
-                },
-                "Reflectance": {
-                  "Type": "Float32",
-                  "Value": 0.0
-                },
-                "Color": {
-                  "Type": "Color3uint8",
-                  "Value": [
-                    163,
-                    162,
-                    165
-                  ]
-                },
-                "TopSurface": {
-                  "Type": "Enum",
-                  "Value": 3
-                },
-                "RightSurfaceInput": {
-                  "Type": "Enum",
-                  "Value": 0
-                },
-                "LeftParamB": {
-                  "Type": "Float32",
-                  "Value": 0.5
-                },
-                "MaterialColors": {
-                  "Type": "BinaryString",
-                  "Value": [
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    106,
-                    127,
-                    63,
-                    63,
-                    127,
-                    107,
-                    127,
-                    102,
-                    63,
-                    138,
-                    86,
-                    62,
-                    143,
-                    126,
-                    95,
-                    139,
-                    109,
-                    79,
-                    102,
-                    108,
-                    111,
-                    101,
-                    176,
-                    234,
-                    195,
-                    199,
-                    218,
-                    137,
-                    90,
-                    71,
-                    58,
-                    46,
-                    36,
-                    30,
-                    30,
-                    37,
-                    102,
-                    92,
-                    59,
-                    232,
-                    156,
-                    74,
-                    115,
-                    123,
-                    107,
-                    132,
-                    123,
-                    90,
-                    129,
-                    194,
-                    224,
-                    115,
-                    132,
-                    74,
-                    198,
-                    189,
-                    181,
-                    206,
-                    173,
-                    148,
-                    148,
-                    148,
-                    140
-                  ]
-                },
-                "WaterColor": {
-                  "Type": "Color3",
-                  "Value": [
-                    0.047058824,
-                    0.32941177,
-                    0.36078432
-                  ]
-                },
-                "CollisionGroupId": {
-                  "Type": "Int32",
-                  "Value": 0
-                },
-                "BackParamB": {
-                  "Type": "Float32",
-                  "Value": 0.5
-                },
-                "CastShadow": {
-                  "Type": "Bool",
-                  "Value": true
-                },
-                "CanCollide": {
-                  "Type": "Bool",
-                  "Value": true
-                },
-                "RotVelocity": {
-                  "Type": "Vector3",
-                  "Value": [
-                    0.0,
-                    0.0,
-                    0.0
-                  ]
-                },
-                "WaterTransparency": {
-                  "Type": "Float32",
-                  "Value": 0.3
-                },
-                "Massless": {
-                  "Type": "Bool",
-                  "Value": false
-                },
-                "Velocity": {
-                  "Type": "Vector3",
-                  "Value": [
-                    0.0,
-                    0.0,
-                    0.0
-                  ]
-                },
-                "BackSurface": {
-                  "Type": "Enum",
-                  "Value": 0
-                },
-                "Anchored": {
-                  "Type": "Bool",
-                  "Value": true
-                },
-                "WaterReflectance": {
-                  "Type": "Float32",
-                  "Value": 1.0
-                },
-                "RightParamA": {
-                  "Type": "Float32",
-                  "Value": -0.5
-                },
-                "TopParamB": {
-                  "Type": "Float32",
-                  "Value": 0.5
-                },
-                "BottomSurface": {
-                  "Type": "Enum",
-                  "Value": 4
-                },
-                "Size": {
-                  "Type": "Vector3",
-                  "Value": [
-                    2044.0,
-                    252.0,
-                    2044.0
-                  ]
-                },
-                "FrontSurfaceInput": {
-                  "Type": "Enum",
-                  "Value": 0
-                },
-                "Locked": {
-                  "Type": "Bool",
-                  "Value": true
-                },
-                "FrontParamA": {
-                  "Type": "Float32",
-                  "Value": -0.5
-                },
-                "Material": {
-                  "Type": "Enum",
-                  "Value": 256
-                },
-                "RightParamB": {
-                  "Type": "Float32",
-                  "Value": 0.5
-                },
-                "BackParamA": {
-                  "Type": "Float32",
-                  "Value": -0.5
-                },
-                "BottomParamB": {
-                  "Type": "Float32",
-                  "Value": 0.5
-                },
-                "WaterWaveSpeed": {
-                  "Type": "Float32",
-                  "Value": 10.0
-                },
-                "BottomSurfaceInput": {
-                  "Type": "Enum",
-                  "Value": 0
-                },
-                "LeftSurfaceInput": {
-                  "Type": "Enum",
-                  "Value": 0
-                },
-                "BottomParamA": {
-                  "Type": "Float32",
-                  "Value": -0.5
-                },
-                "RootPriority": {
-                  "Type": "Int32",
-                  "Value": 0
-                },
-                "LeftSurface": {
-                  "Type": "Enum",
-                  "Value": 0
-                },
-                "RightSurface": {
-                  "Type": "Enum",
-                  "Value": 0
-                },
-                "BackSurfaceInput": {
-                  "Type": "Enum",
-                  "Value": 0
+        "Vfs": {
+          "files": {
+            "Baseplate.rbxmx": {
+              "contents": {
+                "Instance": {
+                  "Name": "Baseplate",
+                  "ClassName": "Part",
+                  "Properties": {
+                    "RootPriority": {
+                      "Type": "Int32",
+                      "Value": 0
+                    },
+                    "FormFactor": {
+                      "Type": "Enum",
+                      "Value": 0
+                    },
+                    "Size": {
+                      "Type": "Vector3",
+                      "Value": [
+                        512.0,
+                        20.0,
+                        512.0
+                      ]
+                    },
+                    "Anchored": {
+                      "Type": "Bool",
+                      "Value": true
+                    },
+                    "Color": {
+                      "Type": "Color3uint8",
+                      "Value": [
+                        99,
+                        95,
+                        98
+                      ]
+                    },
+                    "Locked": {
+                      "Type": "Bool",
+                      "Value": true
+                    },
+                    "CustomPhysicalProperties": {
+                      "Type": "PhysicalProperties",
+                      "Value": null
+                    },
+                    "CFrame": {
+                      "Type": "CFrame",
+                      "Value": [
+                        0.0,
+                        -10.0,
+                        0.0,
+                        1.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                      ]
+                    },
+                    "CollisionGroupId": {
+                      "Type": "Int32",
+                      "Value": 0
+                    }
+                  }
+                }
+              }
+            },
+            "Terrain.rbxmx": {
+              "contents": {
+                "Instance": {
+                  "Name": "Terrain",
+                  "ClassName": "Terrain",
+                  "Properties": {
+                    "LeftSurface": {
+                      "Type": "Enum",
+                      "Value": 0
+                    },
+                    "Size": {
+                      "Type": "Vector3",
+                      "Value": [
+                        2044.0,
+                        252.0,
+                        2044.0
+                      ]
+                    },
+                    "BackParamA": {
+                      "Type": "Float32",
+                      "Value": -0.5
+                    },
+                    "Reflectance": {
+                      "Type": "Float32",
+                      "Value": 0.0
+                    },
+                    "RotVelocity": {
+                      "Type": "Vector3",
+                      "Value": [
+                        0.0,
+                        0.0,
+                        0.0
+                      ]
+                    },
+                    "WaterWaveSpeed": {
+                      "Type": "Float32",
+                      "Value": 10.0
+                    },
+                    "WaterReflectance": {
+                      "Type": "Float32",
+                      "Value": 1.0
+                    },
+                    "BottomSurfaceInput": {
+                      "Type": "Enum",
+                      "Value": 0
+                    },
+                    "LeftSurfaceInput": {
+                      "Type": "Enum",
+                      "Value": 0
+                    },
+                    "FrontParamA": {
+                      "Type": "Float32",
+                      "Value": -0.5
+                    },
+                    "BackSurface": {
+                      "Type": "Enum",
+                      "Value": 0
+                    },
+                    "CanCollide": {
+                      "Type": "Bool",
+                      "Value": true
+                    },
+                    "Velocity": {
+                      "Type": "Vector3",
+                      "Value": [
+                        0.0,
+                        0.0,
+                        0.0
+                      ]
+                    },
+                    "WaterColor": {
+                      "Type": "Color3",
+                      "Value": [
+                        0.047058824,
+                        0.32941177,
+                        0.36078432
+                      ]
+                    },
+                    "BottomParamA": {
+                      "Type": "Float32",
+                      "Value": -0.5
+                    },
+                    "WaterWaveSize": {
+                      "Type": "Float32",
+                      "Value": 0.15
+                    },
+                    "TopSurface": {
+                      "Type": "Enum",
+                      "Value": 3
+                    },
+                    "WaterTransparency": {
+                      "Type": "Float32",
+                      "Value": 0.3
+                    },
+                    "Locked": {
+                      "Type": "Bool",
+                      "Value": true
+                    },
+                    "Massless": {
+                      "Type": "Bool",
+                      "Value": false
+                    },
+                    "Color": {
+                      "Type": "Color3uint8",
+                      "Value": [
+                        163,
+                        162,
+                        165
+                      ]
+                    },
+                    "CastShadow": {
+                      "Type": "Bool",
+                      "Value": true
+                    },
+                    "FrontSurfaceInput": {
+                      "Type": "Enum",
+                      "Value": 0
+                    },
+                    "BackSurfaceInput": {
+                      "Type": "Enum",
+                      "Value": 0
+                    },
+                    "BottomParamB": {
+                      "Type": "Float32",
+                      "Value": 0.5
+                    },
+                    "FrontParamB": {
+                      "Type": "Float32",
+                      "Value": 0.5
+                    },
+                    "BottomSurface": {
+                      "Type": "Enum",
+                      "Value": 4
+                    },
+                    "Material": {
+                      "Type": "Enum",
+                      "Value": 256
+                    },
+                    "RightParamB": {
+                      "Type": "Float32",
+                      "Value": 0.5
+                    },
+                    "RightSurface": {
+                      "Type": "Enum",
+                      "Value": 0
+                    },
+                    "BackParamB": {
+                      "Type": "Float32",
+                      "Value": 0.5
+                    },
+                    "CollisionGroupId": {
+                      "Type": "Int32",
+                      "Value": 0
+                    },
+                    "TopSurfaceInput": {
+                      "Type": "Enum",
+                      "Value": 0
+                    },
+                    "RightSurfaceInput": {
+                      "Type": "Enum",
+                      "Value": 0
+                    },
+                    "LeftParamB": {
+                      "Type": "Float32",
+                      "Value": 0.5
+                    },
+                    "CustomPhysicalProperties": {
+                      "Type": "PhysicalProperties",
+                      "Value": null
+                    },
+                    "CFrame": {
+                      "Type": "CFrame",
+                      "Value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                      ]
+                    },
+                    "LeftParamA": {
+                      "Type": "Float32",
+                      "Value": -0.5
+                    },
+                    "TopParamB": {
+                      "Type": "Float32",
+                      "Value": 0.5
+                    },
+                    "Anchored": {
+                      "Type": "Bool",
+                      "Value": true
+                    },
+                    "Transparency": {
+                      "Type": "Float32",
+                      "Value": 0.0
+                    },
+                    "MaterialColors": {
+                      "Type": "BinaryString",
+                      "Value": [
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        106,
+                        127,
+                        63,
+                        63,
+                        127,
+                        107,
+                        127,
+                        102,
+                        63,
+                        138,
+                        86,
+                        62,
+                        143,
+                        126,
+                        95,
+                        139,
+                        109,
+                        79,
+                        102,
+                        108,
+                        111,
+                        101,
+                        176,
+                        234,
+                        195,
+                        199,
+                        218,
+                        137,
+                        90,
+                        71,
+                        58,
+                        46,
+                        36,
+                        30,
+                        30,
+                        37,
+                        102,
+                        92,
+                        59,
+                        232,
+                        156,
+                        74,
+                        115,
+                        123,
+                        107,
+                        132,
+                        123,
+                        90,
+                        129,
+                        194,
+                        224,
+                        115,
+                        132,
+                        74,
+                        198,
+                        189,
+                        181,
+                        206,
+                        173,
+                        148,
+                        148,
+                        148,
+                        140
+                      ]
+                    },
+                    "TopParamA": {
+                      "Type": "Float32",
+                      "Value": -0.5
+                    },
+                    "RootPriority": {
+                      "Type": "Int32",
+                      "Value": 0
+                    },
+                    "RightParamA": {
+                      "Type": "Float32",
+                      "Value": -0.5
+                    },
+                    "FrontSurface": {
+                      "Type": "Enum",
+                      "Value": 0
+                    }
+                  }
+                }
+              }
+            },
+            "Camera.rbxmx": {
+              "contents": {
+                "Instance": {
+                  "Name": "Camera",
+                  "ClassName": "Camera",
+                  "Properties": {
+                    "CFrame": {
+                      "Type": "CFrame",
+                      "Value": [
+                        0.32168984,
+                        18.234615,
+                        23.764597,
+                        0.98357147,
+                        -0.08195359,
+                        0.16084453,
+                        0.0,
+                        0.8910084,
+                        0.453987,
+                        -0.18051969,
+                        -0.44652867,
+                        0.87637025
+                      ]
+                    },
+                    "Focus": {
+                      "Type": "CFrame",
+                      "Value": [
+                        0.0,
+                        17.32664,
+                        22.011852,
+                        1.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                      ]
+                    }
+                  }
                 }
               }
             }
           },
-          "Baseplate.rbxmx": {
-            "contents": {
-              "Name": "Baseplate",
-              "ClassName": "Part",
-              "Properties": {
-                "Anchored": {
-                  "Type": "Bool",
-                  "Value": true
-                },
-                "FormFactor": {
-                  "Type": "Enum",
-                  "Value": 0
-                },
-                "Color": {
-                  "Type": "Color3uint8",
-                  "Value": [
-                    99,
-                    95,
-                    98
-                  ]
-                },
-                "CustomPhysicalProperties": {
-                  "Type": "PhysicalProperties",
-                  "Value": null
-                },
-                "Size": {
-                  "Type": "Vector3",
-                  "Value": [
-                    512.0,
-                    20.0,
-                    512.0
-                  ]
-                },
-                "RootPriority": {
-                  "Type": "Int32",
-                  "Value": 0
-                },
-                "Locked": {
-                  "Type": "Bool",
-                  "Value": true
-                },
-                "CollisionGroupId": {
-                  "Type": "Int32",
-                  "Value": 0
-                },
-                "CFrame": {
-                  "Type": "CFrame",
-                  "Value": [
-                    0.0,
-                    -10.0,
-                    0.0,
-                    1.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    1.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    1.0
-                  ]
-                }
-              }
-            }
-          },
-          "Camera.rbxmx": {
-            "contents": {
-              "Name": "Camera",
-              "ClassName": "Camera",
-              "Properties": {
-                "CFrame": {
-                  "Type": "CFrame",
-                  "Value": [
-                    0.32168984,
-                    18.234615,
-                    23.764597,
-                    0.98357147,
-                    -0.08195359,
-                    0.16084453,
-                    0.0,
-                    0.8910084,
-                    0.453987,
-                    -0.18051969,
-                    -0.44652867,
-                    0.87637025
-                  ]
-                },
-                "Focus": {
-                  "Type": "CFrame",
-                  "Value": [
-                    0.0,
-                    17.32664,
-                    22.011852,
-                    1.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    1.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    1.0
-                  ]
-                }
-              }
-            }
-          }
-        },
-        "tree": {}
+          "tree": {},
+          "finished": false
+        }
+      }
+    },
+    "StarterPlayer": {
+      "contents": {
+        "Vfs": {
+          "files": {},
+          "tree": {},
+          "finished": false
+        }
       }
     }
   },
   "tree": {
+    "SoundService": {
+      "$className": "SoundService",
+      "properties": {
+        "RespectFilteringEnabled": {
+          "Type": "Bool",
+          "Value": true
+        }
+      }
+    },
     "Workspace": {
       "$className": "Workspace",
       "properties": {
+        "FilteringEnabled": {
+          "Type": "Bool",
+          "Value": true
+        },
+        "StreamingPauseMode": {
+          "Type": "Enum",
+          "Value": 0
+        },
+        "StreamingMinRadius": {
+          "Type": "Int32",
+          "Value": 64
+        },
         "AutoJointsMode": {
           "Type": "Enum",
           "Value": 0
@@ -427,27 +460,6 @@
         "StreamingTargetRadius": {
           "Type": "Int32",
           "Value": 1024
-        },
-        "StreamingMinRadius": {
-          "Type": "Int32",
-          "Value": 64
-        },
-        "StreamingPauseMode": {
-          "Type": "Enum",
-          "Value": 0
-        },
-        "FilteringEnabled": {
-          "Type": "Bool",
-          "Value": true
-        }
-      }
-    },
-    "SoundService": {
-      "$className": "SoundService",
-      "properties": {
-        "RespectFilteringEnabled": {
-          "Type": "Bool",
-          "Value": true
         }
       }
     },
@@ -471,25 +483,13 @@
             0.5019608
           ]
         },
-        "FogColor": {
-          "Type": "Color3",
-          "Value": [
-            0.7529412,
-            0.7529412,
-            0.7529412
-          ]
-        },
-        "Technology": {
-          "Type": "Enum",
-          "Value": 1
+        "Outlines": {
+          "Type": "Bool",
+          "Value": false
         },
         "Brightness": {
           "Type": "Float32",
           "Value": 2.0
-        },
-        "Outlines": {
-          "Type": "Bool",
-          "Value": false
         },
         "Ambient": {
           "Type": "Color3",
@@ -497,6 +497,18 @@
             0.0,
             0.0,
             0.0
+          ]
+        },
+        "Technology": {
+          "Type": "Enum",
+          "Value": 1
+        },
+        "FogColor": {
+          "Type": "Color3",
+          "Value": [
+            0.7529412,
+            0.7529412,
+            0.7529412
           ]
         },
         "GlobalShadows": {
@@ -508,41 +520,11 @@
     "StarterPlayer": {
       "$className": "StarterPlayer",
       "properties": {
-        "GameSettingsAssetIDHead": {
-          "Type": "Int32",
-          "Value": 0
-        },
-        "GameSettingsAssetIDPants": {
-          "Type": "Int32",
-          "Value": 0
-        },
-        "GameSettingsScaleRangeHeight": {
-          "Type": "NumberRange",
-          "Value": [
-            0.9,
-            1.05
-          ]
-        },
-        "GameSettingsScaleRangeBodyType": {
-          "Type": "NumberRange",
-          "Value": [
-            0.0,
-            1.0
-          ]
-        },
         "GameSettingsAssetIDLeftLeg": {
           "Type": "Int32",
           "Value": 0
         },
-        "GameSettingsAssetIDLeftArm": {
-          "Type": "Int32",
-          "Value": 0
-        },
-        "GameSettingsAssetIDRightLeg": {
-          "Type": "Int32",
-          "Value": 0
-        },
-        "GameSettingsAssetIDFace": {
+        "GameSettingsAssetIDShirt": {
           "Type": "Int32",
           "Value": 0
         },
@@ -554,25 +536,7 @@
           "Type": "Int32",
           "Value": 0
         },
-        "GameSettingsScaleRangeWidth": {
-          "Type": "NumberRange",
-          "Value": [
-            0.7,
-            1.0
-          ]
-        },
-        "GameSettingsScaleRangeProportion": {
-          "Type": "NumberRange",
-          "Value": [
-            0.0,
-            1.0
-          ]
-        },
-        "GameSettingsAssetIDShirt": {
-          "Type": "Int32",
-          "Value": 0
-        },
-        "GameSettingsAssetIDTeeShirt": {
+        "GameSettingsAssetIDHead": {
           "Type": "Int32",
           "Value": 0
         },
@@ -582,8 +546,57 @@
             0.95,
             1.0
           ]
+        },
+        "GameSettingsAssetIDTeeShirt": {
+          "Type": "Int32",
+          "Value": 0
+        },
+        "GameSettingsScaleRangeWidth": {
+          "Type": "NumberRange",
+          "Value": [
+            0.7,
+            1.0
+          ]
+        },
+        "GameSettingsAssetIDRightLeg": {
+          "Type": "Int32",
+          "Value": 0
+        },
+        "GameSettingsScaleRangeProportion": {
+          "Type": "NumberRange",
+          "Value": [
+            0.0,
+            1.0
+          ]
+        },
+        "GameSettingsAssetIDFace": {
+          "Type": "Int32",
+          "Value": 0
+        },
+        "GameSettingsScaleRangeHeight": {
+          "Type": "NumberRange",
+          "Value": [
+            0.9,
+            1.05
+          ]
+        },
+        "GameSettingsAssetIDPants": {
+          "Type": "Int32",
+          "Value": 0
+        },
+        "GameSettingsAssetIDLeftArm": {
+          "Type": "Int32",
+          "Value": 0
+        },
+        "GameSettingsScaleRangeBodyType": {
+          "Type": "NumberRange",
+          "Value": [
+            0.0,
+            1.0
+          ]
         }
       }
     }
-  }
+  },
+  "finished": false
 }

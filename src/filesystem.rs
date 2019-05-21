@@ -66,7 +66,7 @@ impl InstructionReader for FileSystem {
     }
 
     fn finish_instructions(&mut self) {
-        let mut file = File::create(self.source.join("default.project.json"))
+        let mut file = File::create(self.root.join("default.project.json"))
             .expect("can't create default.project.json");
         file.write_all(
             &serde_json::to_string_pretty(&self.project)

@@ -1,0 +1,29 @@
+{
+  "files": {
+    "Folder": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "ModuleScript.lua": {
+              "contents": {
+                "Bytes": "local module = {}\n\nreturn module\n"
+              }
+            },
+            "Script.server.lua": {
+              "contents": {
+                "Bytes": "print(\"Hello world!\")\n"
+              }
+            },
+            "LocalScript.client.lua": {
+              "contents": {
+                "Bytes": "print(\"Hello world!\")\n"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    }
+  },
+  "tree": {}
+}

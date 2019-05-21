@@ -147,7 +147,7 @@ fn repr_instance<'a>(
                         }
 
                         let new_base: Cow<'a, Path> = Cow::Owned(base.join(&child.name));
-                        let mut instructions = vec![Instruction::add_to_tree(patch)];
+                        let mut instructions = vec![Instruction::add_to_tree(patch, new_base.to_string_lossy().into_owned())];
                         if !child.get_children_ids().is_empty() {
                             instructions.push(Instruction::CreateFolder {
                                 folder: new_base.clone(),

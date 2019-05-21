@@ -1,0 +1,29 @@
+{
+  "files": {
+    "B": {
+      "contents": {
+        "Vfs": {
+          "files": {},
+          "tree": {}
+        }
+      }
+    },
+    "A": {
+      "contents": {
+        "Vfs": {
+          "files": {},
+          "tree": {}
+        }
+      }
+    },
+    "C": {
+      "contents": {
+        "Vfs": {
+          "files": {},
+          "tree": {}
+        }
+      }
+    }
+  },
+  "tree": {}
+}

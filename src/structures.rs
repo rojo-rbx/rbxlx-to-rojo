@@ -6,6 +6,9 @@ use std::{borrow::Cow, collections::HashMap, path::Path};
 pub struct TreePartition {
     #[serde(rename = "$className")]
     class_name: String,
+    #[serde(rename = "$path")]
+    path: String,
+    #[serde(rename = "$properties")]
     properties: HashMap<String, RbxValue>,
 }
 
@@ -27,11 +30,12 @@ pub enum Instruction<'a> {
 }
 
 impl<'a> Instruction<'a> {
-    pub fn add_to_tree(instance: RbxInstance) -> Self {
+    pub fn add_to_tree(instance: RbxInstance, path: String) -> Self {
         Instruction::AddToTree {
             name: instance.name.clone(),
             partition: TreePartition {
                 class_name: instance.class_name.clone(),
+                path,
                 properties: instance.properties.clone(),
             },
         }

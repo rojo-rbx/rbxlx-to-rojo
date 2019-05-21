@@ -1,0 +1,70 @@
+{
+  "files": {
+    "Folder/ModuleScript": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "ModuleScript.lua": {
+              "contents": {
+                "Bytes": "local module = {}\n\nreturn module\n"
+              }
+            },
+            "init.lua": {
+              "contents": {
+                "Bytes": "local module = {}\n\nreturn module\n"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Folder": {
+      "contents": {
+        "Vfs": {
+          "files": {},
+          "tree": {}
+        }
+      }
+    },
+    "Folder/Script": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "ModuleScript.lua": {
+              "contents": {
+                "Bytes": "local module = {}\n\nreturn module\n"
+              }
+            },
+            "init.server.lua": {
+              "contents": {
+                "Bytes": "print(\"Hello world!\")\n"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Folder/LocalScript": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "ModuleScript.lua": {
+              "contents": {
+                "Bytes": "local module = {}\n\nreturn module\n"
+              }
+            },
+            "init.client.lua": {
+              "contents": {
+                "Bytes": "print(\"Hello world!\")\n"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    }
+  },
+  "tree": {}
+}

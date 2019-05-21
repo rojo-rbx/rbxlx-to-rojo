@@ -17,12 +17,18 @@ struct VirtualFile {
     contents: VirtualFileContents,
 }
 
-#[derive(Deserialize, Serialize, Debug, PartialEq, Default)]
+#[derive(Deserialize, Serialize, Debug, Default)]
 struct VirtualFileSystem {
     files: HashMap<String, VirtualFile>,
     tree: HashMap<String, TreePartition>,
     #[serde(skip)]
     finished: bool,
+}
+
+impl PartialEq<VirtualFileSystem> for VirtualFileSystem {
+    fn eq(&self, rhs: &VirtualFileSystem) -> bool {
+        self.files == rhs.files && self.tree == rhs.tree
+    }
 }
 
 impl InstructionReader for VirtualFileSystem {
@@ -115,6 +121,7 @@ fn run_tests() {
 
         let mut expected_path = path.clone();
         expected_path.push("output.json");
+        assert!(vfs.finished, "finish_instructions was not called");
 
         if let Ok(expected) = fs::read_to_string(&expected_path) {
             assert_eq!(
@@ -133,8 +140,10 @@ fn run_tests() {
                 other => panic!("couldn't remove filesystem dir: {:?}", other),
             }
         }
+
+        fs::create_dir(&filesystem_path).unwrap();
+
         let mut filesystem = FileSystem::from_root(filesystem_path);
         process_instructions(&tree, &mut filesystem);
-        assert!(vfs.finished, "finish_instructions was not called");
     }
 }

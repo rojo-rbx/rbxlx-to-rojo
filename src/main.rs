@@ -182,7 +182,6 @@ fn repr_instance<'a>(
                         Instruction::CreateFolder {
                             folder: folder_path.clone(),
                         },
-
                         Instruction::CreateFile {
                             filename: Cow::Owned(folder_path.join("init.meta.json")),
                             contents: Cow::Owned(

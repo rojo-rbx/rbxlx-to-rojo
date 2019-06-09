@@ -1,6 +1,6 @@
 use log::{debug, info, warn};
 use rbx_dom_weak::{
-    RbxInstance, RbxInstanceProperties, RbxTree, RbxValue, RbxValueConversion, RbxValueType,
+    RbxId, RbxInstance, RbxInstanceProperties, RbxTree, RbxValue, RbxValueConversion, RbxValueType,
 };
 use std::{
     borrow::Cow,
@@ -48,6 +48,7 @@ fn is_default_property(key: &str, value: &RbxValue) -> bool {
 fn repr_instance<'a>(
     base: &'a Path,
     child: &'a RbxInstance,
+    has_scripts: &'a HashMap<RbxId, bool>,
 ) -> Result<(Vec<Instruction<'a>>, Cow<'a, Path>), Error> {
     match child.class_name.as_str() {
         "Folder" => {
@@ -151,7 +152,7 @@ fn repr_instance<'a>(
                         if !child.get_children_ids().is_empty() {
                             instructions.push(Instruction::CreateFolder {
                                 folder: new_base.clone(),
-                            })
+                            });
                         }
 
                         return Ok((instructions, new_base));
@@ -166,6 +167,35 @@ fn repr_instance<'a>(
                 }
             }
             .into_owned();
+
+            // If there are scripts, we'll need to make a .meta.json folder
+            println!("{} {:?}", child.name, has_scripts.get(&child.get_id()));
+            if let Some(true) = has_scripts.get(&child.get_id()) {
+                let folder_path: Cow<'a, Path> = Cow::Owned(base.join(&child.name));
+                let meta = MetaFile {
+                    class_name: child.class_name.clone(),
+                    properties,
+                };
+
+                return Ok((
+                    vec![
+                        Instruction::CreateFolder {
+                            folder: folder_path.clone(),
+                        },
+
+                        Instruction::CreateFile {
+                            filename: Cow::Owned(folder_path.join("init.meta.json")),
+                            contents: Cow::Owned(
+                                serde_json::to_string_pretty(&meta)
+                                    .expect("couldn't serialize meta")
+                                    .as_bytes()
+                                    .into(),
+                            ),
+                        },
+                    ],
+                    folder_path,
+                ));
+            }
 
             let properties = RbxInstanceProperties {
                 name: child.name.clone(),
@@ -190,20 +220,21 @@ fn repr_instance<'a>(
 }
 
 impl<'a, I: InstructionReader + ?Sized> TreeIterator<'a, I> {
-    fn visit_instructions(&mut self, instance: &RbxInstance) {
+    fn visit_instructions(&mut self, instance: &RbxInstance, has_scripts: &HashMap<RbxId, bool>) {
         for child_id in instance.get_children_ids() {
             let child = self
                 .tree
                 .get_instance(*child_id)
                 .expect("got fake child id?");
-            let (instructions_to_create_base, path) = match repr_instance(&self.path, child) {
-                Ok((instructions_to_create_base, path)) => (instructions_to_create_base, path),
-                Err(Error::ShouldntBeRepresented) => continue,
-                Err(other) => panic!(
-                    "an error occured when trying to represent an instance - {:?}",
-                    other
-                ),
-            };
+            let (instructions_to_create_base, path) =
+                match repr_instance(&self.path, child, has_scripts) {
+                    Ok((instructions_to_create_base, path)) => (instructions_to_create_base, path),
+                    Err(Error::ShouldntBeRepresented) => continue,
+                    Err(other) => panic!(
+                        "an error occured when trying to represent an instance - {:?}",
+                        other
+                    ),
+                };
             self.instruction_reader
                 .read_instructions(instructions_to_create_base);
             TreeIterator {
@@ -211,9 +242,43 @@ impl<'a, I: InstructionReader + ?Sized> TreeIterator<'a, I> {
                 path: &path,
                 tree: self.tree,
             }
-            .visit_instructions(child);
+            .visit_instructions(child, has_scripts);
         }
     }
+}
+
+fn check_has_scripts(
+    tree: &RbxTree,
+    instance: &RbxInstance,
+    has_scripts: &mut HashMap<RbxId, bool>,
+) -> bool {
+    let result = match instance.class_name.as_str() {
+        "Script" | "LocalScript" | "ModuleScript" => {
+            for descendant in tree.descendants(instance.get_id()) {
+                has_scripts.insert(descendant.get_id(), true);
+            }
+
+            true
+        }
+
+        _ => {
+            let mut children_have_scripts = false;
+
+            for child_id in instance.get_children_ids() {
+                children_have_scripts = children_have_scripts
+                    || check_has_scripts(
+                        tree,
+                        tree.get_instance(*child_id).expect("fake child id?"),
+                        has_scripts,
+                    );
+            }
+
+            children_have_scripts
+        }
+    };
+
+    has_scripts.insert(instance.get_id(), result);
+    result
 }
 
 pub fn process_instructions(tree: &RbxTree, instruction_reader: &mut InstructionReader) {
@@ -221,12 +286,15 @@ pub fn process_instructions(tree: &RbxTree, instruction_reader: &mut Instruction
     let root_instance = tree.get_instance(root).expect("fake root id?");
     let path = PathBuf::new();
 
+    let mut has_scripts = HashMap::new();
+    check_has_scripts(tree, root_instance, &mut has_scripts);
+
     TreeIterator {
         instruction_reader,
         path: &path,
         tree,
     }
-    .visit_instructions(&root_instance);
+    .visit_instructions(&root_instance, &has_scripts);
 
     instruction_reader.finish_instructions();
 }

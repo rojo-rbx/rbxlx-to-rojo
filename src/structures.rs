@@ -12,6 +12,14 @@ pub struct TreePartition {
     properties: HashMap<String, RbxValue>,
 }
 
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
+pub struct MetaFile {
+    #[serde(rename = "className")]
+    pub class_name: String,
+    #[serde(rename = "properties")]
+    pub properties: HashMap<String, RbxValue>,
+}
+
 #[derive(Clone, Debug)]
 pub enum Instruction<'a> {
     AddToTree {

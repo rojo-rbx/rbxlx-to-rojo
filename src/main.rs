@@ -169,7 +169,6 @@ fn repr_instance<'a>(
             .into_owned();
 
             // If there are scripts, we'll need to make a .meta.json folder
-            println!("{} {:?}", child.name, has_scripts.get(&child.get_id()));
             if let Some(true) = has_scripts.get(&child.get_id()) {
                 let folder_path: Cow<'a, Path> = Cow::Owned(base.join(&child.name));
                 let meta = MetaFile {

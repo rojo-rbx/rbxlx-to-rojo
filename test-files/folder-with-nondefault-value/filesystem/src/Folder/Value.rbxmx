@@ -1,0 +1,8 @@
+<roblox version="4">
+  <Item class="NumberValue" referent="0">
+    <Properties>
+      <string name="Name">Value</string>
+      <double name="Value">2</double>
+    </Properties>
+  </Item>
+</roblox>

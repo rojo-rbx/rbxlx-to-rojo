@@ -1,0 +1,26 @@
+{
+  "className": "Tool",
+  "properties": {
+    "Grip": {
+      "Type": "CFrame",
+      "Value": [
+        0.0,
+        0.0,
+        -1.5,
+        0.0,
+        0.0,
+        1.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ]
+    },
+    "TextureId": {
+      "Type": "Content",
+      "Value": "rbxasset://Textures/Sword128.png"
+    }
+  }
+}

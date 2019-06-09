@@ -1,0 +1,11 @@
+<roblox version="4">
+  <Item class="Sound" referent="0">
+    <Properties>
+      <string name="Name">SwordLunge</string>
+      <float name="Volume">0.6</float>
+      <Content name="SoundId">
+        <url>http://www.roblox.com/asset/?id=12222208</url>
+      </Content>
+    </Properties>
+  </Item>
+</roblox>

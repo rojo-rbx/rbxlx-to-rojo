@@ -1,10 +1,6 @@
 {
   "className": "Tool",
   "properties": {
-    "TextureId": {
-      "Type": "Content",
-      "Value": "rbxasset://Textures/Sword128.png"
-    },
     "Grip": {
       "Type": "CFrame",
       "Value": [
@@ -21,6 +17,10 @@
         1.0,
         0.0
       ]
+    },
+    "TextureId": {
+      "Type": "Content",
+      "Value": "rbxasset://Textures/Sword128.png"
     }
   },
   "ignoreUnknownInstances": true

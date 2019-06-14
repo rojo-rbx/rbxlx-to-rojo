@@ -2,7 +2,7 @@ use log::{debug, info, warn};
 use rbx_dom_weak::{RbxId, RbxInstance, RbxTree, RbxValue, RbxValueConversion, RbxValueType};
 use std::{
     borrow::Cow,
-    collections::{HashMap, HashSet},
+    collections::{BTreeMap, HashMap, HashSet},
     fs,
     path::{Path, PathBuf},
 };
@@ -60,7 +60,7 @@ fn repr_instance<'a>(
                         contents: Cow::Owned(
                             serde_json::to_string_pretty(&MetaFile {
                                 class_name: None,
-                                properties: HashMap::new(),
+                                properties: BTreeMap::new(),
                                 ignore_unknown_instances: true,
                             })
                             .unwrap()
@@ -192,7 +192,7 @@ fn repr_instance<'a>(
             let folder_path: Cow<'a, Path> = Cow::Owned(base.join(&child.name));
             let meta = MetaFile {
                 class_name: Some(child.class_name.clone()),
-                properties,
+                properties: properties.into_iter().collect(),
                 ignore_unknown_instances: true,
             };
 

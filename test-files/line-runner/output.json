@@ -1,0 +1,325 @@
+{
+  "files": {
+    "Workspace": {
+      "contents": {
+        "Vfs": {
+          "files": {},
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/Bridge": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/Bridge/Parts": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/JumpPad": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/JumpPad/Parts": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/Ladder": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/Ladder/Parts": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/Ladder/Parts/Coin": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"className\": \"Model\",\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/Ladder/Parts/Coin/Coin": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "GetCoinScript.server.lua": {
+              "contents": {
+                "Bytes": "local newScript = game.ServerStorage.Scripts.CoinScript:Clone()\nnewScript.Parent = script.Parent\nnewScript.Disabled = false\n\nscript:Destroy()\n"
+              }
+            },
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"className\": \"Part\",\n  \"properties\": {\n    \"CFrame\": {\n      \"Type\": \"CFrame\",\n      \"Value\": [\n        39.643204,\n        24.885166,\n        -87.60025,\n        -0.00000166893,\n        -0.8714846,\n        -0.49042332,\n        -1.0000002,\n        0.0000016093254,\n        -2.682209e-7,\n        0.0000011175871,\n        0.49042332,\n        -0.87148476\n      ]\n    },\n    \"CanCollide\": {\n      \"Type\": \"Bool\",\n      \"Value\": false\n    },\n    \"CollisionGroupId\": {\n      \"Type\": \"Int32\",\n      \"Value\": 0\n    },\n    \"Color\": {\n      \"Type\": \"Color3uint8\",\n      \"Value\": [\n        99,\n        95,\n        98\n      ]\n    },\n    \"CustomPhysicalProperties\": {\n      \"Type\": \"PhysicalProperties\",\n      \"Value\": null\n    },\n    \"RootPriority\": {\n      \"Type\": \"Int32\",\n      \"Value\": 0\n    },\n    \"RotVelocity\": {\n      \"Type\": \"Vector3\",\n      \"Value\": [\n        5.130978e-7,\n        4.9923415,\n        -1.7840921e-7\n      ]\n    },\n    \"Size\": {\n      \"Type\": \"Vector3\",\n      \"Value\": [\n        4.0,\n        1.2,\n        4.0\n      ]\n    },\n    \"Velocity\": {\n      \"Type\": \"Vector3\",\n      \"Value\": [\n        3.6479993e-20,\n        -0.0042958274,\n        3.6479993e-20\n      ]\n    }\n  },\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/MineAndSpikes": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/MineAndSpikes/Parts": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/Mines": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/Mines/Parts": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/SpikesGoingDown": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/SpikesGoingDown/Parts": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/SpikesGoingUp": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/SpikesGoingUp/Parts": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/Trapdoor": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/Trapdoor/Parts": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/Zombie": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/Zombie/Parts": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    }
+  },
+  "tree": {
+    "Workspace": {
+      "$className": "Workspace",
+      "$path": "Workspace",
+      "$properties": {
+        "AutoJointsMode": {
+          "Type": "Enum",
+          "Value": 0
+        },
+        "FilteringEnabled": {
+          "Type": "Bool",
+          "Value": true
+        },
+        "StreamingMinRadius": {
+          "Type": "Int32",
+          "Value": 64
+        },
+        "StreamingPauseMode": {
+          "Type": "Enum",
+          "Value": 0
+        },
+        "StreamingTargetRadius": {
+          "Type": "Int32",
+          "Value": 1024
+        }
+      }
+    }
+  }
+}

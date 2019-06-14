@@ -1,0 +1,31 @@
+{
+  "name": "project",
+  "tree": {
+    "Workspace": {
+      "$className": "Workspace",
+      "$path": "Workspace",
+      "$properties": {
+        "AutoJointsMode": {
+          "Type": "Enum",
+          "Value": 0
+        },
+        "FilteringEnabled": {
+          "Type": "Bool",
+          "Value": true
+        },
+        "StreamingMinRadius": {
+          "Type": "Int32",
+          "Value": 64
+        },
+        "StreamingPauseMode": {
+          "Type": "Enum",
+          "Value": 0
+        },
+        "StreamingTargetRadius": {
+          "Type": "Int32",
+          "Value": 1024
+        }
+      }
+    }
+  }
+}

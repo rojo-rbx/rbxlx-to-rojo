@@ -2,18 +2,9 @@ use rbx_dom_weak::{RbxInstance, RbxValue};
 use serde::{Deserialize, Serialize};
 use std::{
     borrow::Cow,
-    collections::{BTreeMap, HashMap},
-    iter::FromIterator,
-    path::{Path, PathBuf},
+    collections::BTreeMap,
+    path::Path,
 };
-
-fn ordered_map<
-    S: serde::Serializer,
-    K: Ord + Serialize,
-    V: Serialize,
->(map: &HashMap<K, V>, serializer: S) -> Result<S::Ok, S::Error> {
-    BTreeMap::from_iter(map.iter()).serialize(serializer)
-}
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
 pub struct TreePartition {
@@ -22,8 +13,7 @@ pub struct TreePartition {
     #[serde(rename = "$path")]
     path: String,
     #[serde(rename = "$properties")]
-    #[serde(serialize_with = "ordered_map")]
-    properties: HashMap<String, RbxValue>,
+    properties: BTreeMap<String, RbxValue>,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
@@ -32,8 +22,8 @@ pub struct MetaFile {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub class_name: Option<String>,
     #[serde(rename = "properties")]
-    #[serde(skip_serializing_if = "HashMap::is_empty")]
-    pub properties: HashMap<String, RbxValue>,
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    pub properties: BTreeMap<String, RbxValue>,
     #[serde(rename = "ignoreUnknownInstances")]
     pub ignore_unknown_instances: bool,
 }
@@ -62,7 +52,7 @@ impl<'a> Instruction<'a> {
             partition: TreePartition {
                 class_name: instance.class_name.clone(),
                 path,
-                properties: instance.properties.clone(),
+                properties: instance.properties.clone().into_iter().collect(),
             },
         }
     }

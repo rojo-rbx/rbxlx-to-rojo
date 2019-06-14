@@ -4,13 +4,9 @@
       "contents": {
         "Vfs": {
           "files": {
-            "Value.rbxmx": {
+            "init.meta.json": {
               "contents": {
-                "Instance": {
-                  "Name": "Value",
-                  "ClassName": "NumberValue",
-                  "Properties": {}
-                }
+                "Bytes": "{\n  \"ignoreUnknownInstances\": true\n}"
               }
             }
           },

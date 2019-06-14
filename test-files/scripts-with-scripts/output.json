@@ -1,32 +1,5 @@
 {
   "files": {
-    "Folder/ModuleScript": {
-      "contents": {
-        "Vfs": {
-          "files": {
-            "ModuleScript.lua": {
-              "contents": {
-                "Bytes": "local module = {}\n\nreturn module\n"
-              }
-            },
-            "init.lua": {
-              "contents": {
-                "Bytes": "local module = {}\n\nreturn module\n"
-              }
-            }
-          },
-          "tree": {}
-        }
-      }
-    },
-    "Folder": {
-      "contents": {
-        "Vfs": {
-          "files": {},
-          "tree": {}
-        }
-      }
-    },
     "Folder/Script": {
       "contents": {
         "Vfs": {
@@ -50,14 +23,47 @@
       "contents": {
         "Vfs": {
           "files": {
+            "init.client.lua": {
+              "contents": {
+                "Bytes": "print(\"Hello world!\")\n"
+              }
+            },
             "ModuleScript.lua": {
               "contents": {
                 "Bytes": "local module = {}\n\nreturn module\n"
               }
-            },
-            "init.client.lua": {
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Folder": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.meta.json": {
               "contents": {
-                "Bytes": "print(\"Hello world!\")\n"
+                "Bytes": "{\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Folder/ModuleScript": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.lua": {
+              "contents": {
+                "Bytes": "local module = {}\n\nreturn module\n"
+              }
+            },
+            "ModuleScript.lua": {
+              "contents": {
+                "Bytes": "local module = {}\n\nreturn module\n"
               }
             }
           },

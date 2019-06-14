@@ -4,9 +4,9 @@
       "contents": {
         "Vfs": {
           "files": {
-            "ModuleScript.lua": {
+            "init.meta.json": {
               "contents": {
-                "Bytes": "local module = {}\n\nreturn module\n"
+                "Bytes": "{\n  \"ignoreUnknownInstances\": true\n}"
               }
             },
             "Script.server.lua": {
@@ -17,6 +17,11 @@
             "LocalScript.client.lua": {
               "contents": {
                 "Bytes": "print(\"Hello world!\")\n"
+              }
+            },
+            "ModuleScript.lua": {
+              "contents": {
+                "Bytes": "local module = {}\n\nreturn module\n"
               }
             }
           },

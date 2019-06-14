@@ -15,9 +15,13 @@ pub struct TreePartition {
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
 pub struct MetaFile {
     #[serde(rename = "className")]
-    pub class_name: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub class_name: Option<String>,
     #[serde(rename = "properties")]
+    #[serde(skip_serializing_if = "HashMap::is_empty")]
     pub properties: HashMap<String, RbxValue>,
+    #[serde(rename = "ignoreUnknownInstances")]
+    pub ignore_unknown_instances: bool,
 }
 
 #[derive(Clone, Debug)]

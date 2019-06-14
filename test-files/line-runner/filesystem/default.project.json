@@ -4,50 +4,27 @@
     "$className": "DataModel",
     "ServerScriptService": {
       "$className": "ServerScriptService",
-      "$path": "src/ServerScriptService",
-      "$properties": {
-        "LoadStringEnabled": {
-          "Type": "Bool",
-          "Value": false
-        }
-      }
+      "$ignoreUnknownInstances": true,
+      "$path": "src/ServerScriptService"
     },
     "ServerStorage": {
       "$className": "ServerStorage",
+      "$ignoreUnknownInstances": true,
       "$path": "src/ServerStorage"
     },
     "StarterPlayer": {
       "$className": "StarterPlayer",
       "StarterPlayerScripts": {
         "$className": "StarterPlayerScripts",
+        "$ignoreUnknownInstances": true,
         "$path": "src/StarterPlayer/StarterPlayerScripts"
-      }
+      },
+      "$ignoreUnknownInstances": true
     },
     "Workspace": {
       "$className": "Workspace",
-      "$path": "src/Workspace",
-      "$properties": {
-        "AutoJointsMode": {
-          "Type": "Enum",
-          "Value": 0
-        },
-        "FilteringEnabled": {
-          "Type": "Bool",
-          "Value": true
-        },
-        "StreamingMinRadius": {
-          "Type": "Int32",
-          "Value": 64
-        },
-        "StreamingPauseMode": {
-          "Type": "Enum",
-          "Value": 0
-        },
-        "StreamingTargetRadius": {
-          "Type": "Int32",
-          "Value": 1024
-        }
-      }
+      "$ignoreUnknownInstances": true,
+      "$path": "src/Workspace"
     }
   }
 }

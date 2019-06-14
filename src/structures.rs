@@ -15,13 +15,16 @@ pub struct TreePartition {
     #[serde(skip_serializing_if = "BTreeMap::is_empty")]
     pub children: BTreeMap<String, TreePartition>,
 
+    #[serde(rename = "$ignoreUnknownInstances")]
+    pub ignore_unknown_instances: bool,
+
     #[serde(rename = "$path")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub path: Option<PathBuf>,
 
-    #[serde(rename = "$properties")]
-    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
-    pub properties: BTreeMap<String, RbxValue>,
+    // #[serde(rename = "$properties")]
+    // #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    // pub properties: BTreeMap<String, RbxValue>,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
@@ -67,8 +70,8 @@ impl<'a> Instruction<'a> {
         TreePartition {
             class_name: instance.class_name.clone(),
             children: BTreeMap::new(),
+            ignore_unknown_instances: true,
             path: Some(path),
-            properties: instance.properties.clone().into_iter().collect(),
         }
     }
 }

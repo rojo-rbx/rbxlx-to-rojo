@@ -932,56 +932,27 @@
   "tree": {
     "ServerScriptService": {
       "$className": "ServerScriptService",
-      "$path": "ServerScriptService",
-      "$properties": {
-        "LoadStringEnabled": {
-          "Type": "Bool",
-          "Value": false
-        }
-      }
+      "$ignoreUnknownInstances": true,
+      "$path": "ServerScriptService"
     },
     "ServerStorage": {
       "$className": "ServerStorage",
+      "$ignoreUnknownInstances": true,
       "$path": "ServerStorage"
     },
     "StarterPlayer": {
       "$className": "StarterPlayer",
       "StarterPlayerScripts": {
         "$className": "StarterPlayerScripts",
-        "$path": "StarterPlayer/StarterPlayerScripts",
-        "$properties": {
-          "Tags": {
-            "Type": "BinaryString",
-            "Value": []
-          }
-        }
-      }
+        "$ignoreUnknownInstances": true,
+        "$path": "StarterPlayer/StarterPlayerScripts"
+      },
+      "$ignoreUnknownInstances": true
     },
     "Workspace": {
       "$className": "Workspace",
-      "$path": "Workspace",
-      "$properties": {
-        "AutoJointsMode": {
-          "Type": "Enum",
-          "Value": 0
-        },
-        "FilteringEnabled": {
-          "Type": "Bool",
-          "Value": true
-        },
-        "StreamingMinRadius": {
-          "Type": "Int32",
-          "Value": 64
-        },
-        "StreamingPauseMode": {
-          "Type": "Enum",
-          "Value": 0
-        },
-        "StreamingTargetRadius": {
-          "Type": "Int32",
-          "Value": 1024
-        }
-      }
+      "$ignoreUnknownInstances": true,
+      "$path": "Workspace"
     }
   }
 }

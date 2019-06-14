@@ -280,8 +280,8 @@ impl<'a, I: InstructionReader + ?Sized> TreeIterator<'a, I> {
                                     )
                                 })
                                 .collect(),
+                            ignore_unknown_instances: true,
                             path: None,
-                            properties: BTreeMap::new(),
                         },
                     })
                 }

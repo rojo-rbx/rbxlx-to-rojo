@@ -23,7 +23,6 @@ lazy_static::lazy_static! {
 #[derive(Debug)]
 enum Error {
     ShouldntBeRepresented, // Empty services, services not officially respected
-                           // XmlEncodeError(rbx_xml::EncodeError),
 }
 
 struct TreeIterator<'a, I: InstructionReader + ?Sized> {

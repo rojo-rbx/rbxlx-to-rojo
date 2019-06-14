@@ -1,19 +1,4 @@
 {
-  "files": {
-    "Folder": {
-      "contents": {
-        "Vfs": {
-          "files": {
-            "init.meta.json": {
-              "contents": {
-                "Bytes": "{\n  \"ignoreUnknownInstances\": true\n}"
-              }
-            }
-          },
-          "tree": {}
-        }
-      }
-    }
-  },
+  "files": {},
   "tree": {}
 }

@@ -47,6 +47,10 @@ fn repr_instance<'a>(
     child: &'a RbxInstance,
     has_scripts: &'a HashMap<RbxId, bool>,
 ) -> Result<(Vec<Instruction<'a>>, Cow<'a, Path>), Error> {
+    if has_scripts.get(&child.get_id()) != Some(&true) {
+        return Err(Error::ShouldntBeRepresented);
+    }
+
     match child.class_name.as_str() {
         "Folder" => {
             let folder_path = base.join(&child.name);
@@ -116,9 +120,6 @@ fn repr_instance<'a>(
 
         other_class => {
             // When all else fails, we can make a meta folder if there's scripts in it
-            if has_scripts.get(&child.get_id()) != Some(&true) {
-                return Err(Error::ShouldntBeRepresented);
-            }
 
             // let mut tree = RbxTree::new(RbxInstanceProperties {
             //     name: "VirtualInstance".to_string(),
@@ -281,12 +282,13 @@ fn check_has_scripts(
             let mut children_have_scripts = false;
 
             for child_id in instance.get_children_ids() {
-                children_have_scripts = children_have_scripts
-                    || check_has_scripts(
-                        tree,
-                        tree.get_instance(*child_id).expect("fake child id?"),
-                        has_scripts,
-                    );
+                let result = check_has_scripts(
+                    tree,
+                    tree.get_instance(*child_id).expect("fake child id?"),
+                    has_scripts,
+                );
+
+                children_have_scripts = children_have_scripts || result;
             }
 
             children_have_scripts

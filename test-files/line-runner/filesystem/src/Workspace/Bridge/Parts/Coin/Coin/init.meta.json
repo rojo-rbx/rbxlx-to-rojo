@@ -1,0 +1,71 @@
+{
+  "className": "Part",
+  "properties": {
+    "CFrame": {
+      "Type": "CFrame",
+      "Value": [
+        -45.692368,
+        10.883584,
+        64.03897,
+        0.00064224005,
+        -0.87152123,
+        -0.49035716,
+        -0.99999964,
+        -0.00075650215,
+        0.000035062432,
+        -0.0004015416,
+        0.49035698,
+        -0.8715215
+      ]
+    },
+    "CanCollide": {
+      "Type": "Bool",
+      "Value": false
+    },
+    "CollisionGroupId": {
+      "Type": "Int32",
+      "Value": 0
+    },
+    "Color": {
+      "Type": "Color3uint8",
+      "Value": [
+        99,
+        95,
+        98
+      ]
+    },
+    "CustomPhysicalProperties": {
+      "Type": "PhysicalProperties",
+      "Value": null
+    },
+    "RootPriority": {
+      "Type": "Int32",
+      "Value": 0
+    },
+    "RotVelocity": {
+      "Type": "Vector3",
+      "Value": [
+        0.000007682771,
+        4.992341,
+        0.00002275745
+      ]
+    },
+    "Size": {
+      "Type": "Vector3",
+      "Value": [
+        4.0,
+        1.2,
+        4.0
+      ]
+    },
+    "Velocity": {
+      "Type": "Vector3",
+      "Value": [
+        3.6479993e-20,
+        -0.0021519673,
+        3.6479993e-20
+      ]
+    }
+  },
+  "ignoreUnknownInstances": true
+}

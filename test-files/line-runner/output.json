@@ -1,5 +1,216 @@
 {
   "files": {
+    "ServerScriptService": {
+      "contents": {
+        "Vfs": {
+          "files": {},
+          "tree": {}
+        }
+      }
+    },
+    "ServerScriptService/Server_Main": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "PathPackager.lua": {
+              "contents": {
+                "Bytes": "-- Credit to Davidii for creating the orginal module which I slightly modified for my purposes\n\nlocal RoomPackager = {}\n\n--returns a table of vector3s that represent the corners of any given part\nfunction RoomPackager:CornersOfPart(part)\n\tlocal cframe = part.CFrame\n\tlocal halfSizeX = part.Size.X / 2\n\tlocal halfSizeY = part.Size.Y / 2\n\tlocal halfSizeZ = part.Size.Z / 2\n\n\tlocal corners = {\n\t\tRightTopBack =\t\tcframe:pointToWorldSpace(Vector3.new(halfSizeX, halfSizeY, halfSizeZ)),\n\t\tRightBottomBack =\tcframe:pointToWorldSpace(Vector3.new(halfSizeX, -halfSizeY, halfSizeZ)),\n\t\tRightTopFront =\t\tcframe:pointToWorldSpace(Vector3.new(halfSizeX, halfSizeY, -halfSizeZ)),\n\t\tRightBottomFront =\tcframe:pointToWorldSpace(Vector3.new(halfSizeX, -halfSizeY, -halfSizeZ)),\n\t\tLeftTopBack =\t\tcframe:pointToWorldSpace(Vector3.new(-halfSizeX, halfSizeY, halfSizeZ)),\n\t\tLeftBottomBack =\tcframe:pointToWorldSpace(Vector3.new(-halfSizeX, -halfSizeY, halfSizeZ)),\n\t\tLeftTopFront =\t\tcframe:pointToWorldSpace(Vector3.new(-halfSizeX, halfSizeY, -halfSizeZ)),\n\t\tLeftBottomFront =\tcframe:pointToWorldSpace(Vector3.new(-halfSizeX, -halfSizeY, -halfSizeZ)),\n\t}\n\n\treturn corners\nend\n\n--returns the four corners with the highest y components\n--this is to catch when a user has flipped the baseplate upside down\nfunction RoomPackager:TopCornersOfBasePlate(basePlate)\n\tlocal corners = self:CornersOfPart(basePlate)\n\tlocal centerY = basePlate.Position.Y\n\tlocal topCorners = {}\n\tfor _, corner in pairs(corners) do\n\t\t--if a corner is higher globally than the center of the part, then\n\t\t--it is along the top-facing surface of the part\n\t\tif corner.Y > centerY then\n\t\t\ttable.insert(topCorners, corner)\n\t\tend\n\tend\n\treturn topCorners\nend\n\n--this returns a region3 that lines up on top of the baseplate to capture\n--whatever room has been constructed on top of it, it is smart enough\n--to capture a room that has been less-than-ideally set up\nfunction RoomPackager:RegionsFromBasePlate(basePlate)\n\tlocal topCorners = self:TopCornersOfBasePlate(basePlate)\n\n\t--we farm the min and max x's and z's from the top corners\n\t--to get x and z coordinates for the region3 that will contain the room\n\t--we choose an arbitrary corner so that the initial values are in the data set\n\tlocal arbitraryCorner = topCorners[1]\n\tlocal minX = arbitraryCorner.X\n\tlocal minZ = arbitraryCorner.Z\n\tlocal maxX = arbitraryCorner.X\n\tlocal maxZ = arbitraryCorner.Z\n\tfor _, corner in pairs(topCorners) do\n\t\tminX = math.min(minX, corner.X)\n\t\tminZ = math.min(minZ, corner.Z)\n\t\tmaxX = math.max(maxX, corner.X)\n\t\tmaxZ = math.max(maxZ, corner.Z)\n\tend\n\n\t--construct the region using these new corners we have constructed\n\t--keeping in mind that all corners in topCorners *should* have the same y value\n\tlocal minY = topCorners[1].Y\n\tlocal lowerCorner = Vector3.new(minX, minY, minZ)\n\tlocal maxY = minY + 70\n\tlocal upperCorner = Vector3.new(maxX, maxY, maxZ)\n\n\tlocal segmentHeight = math.floor(100000/(math.abs(maxX-minX)*math.abs(maxZ-minZ)))\n\n\tlocal regions = {}\n\n\tlocal currentHeight = minY\n\twhile currentHeight - minY < 70 do\n\t\tcurrentHeight = currentHeight + segmentHeight\n\t\tlowerCorner = Vector3.new(lowerCorner.x, currentHeight - segmentHeight, lowerCorner.z)\n\t\tupperCorner = Vector3.new(upperCorner.x, currentHeight, upperCorner.z)\n\t\ttable.insert(regions, Region3.new(lowerCorner, upperCorner))\n\tend\n\n\treturn regions\nend\n\n--Finds the model the current part is in which is closest to workspace\n--Returns the part is the part is in Workspace\n--Returns nil if the object is already in the roomModel we are constructing\nlocal function closestParentToWorkspace(object, roomModel)\n\tif object.Parent == roomModel then\n\t\treturn nil\n\tend\n\tif object.Parent == game.Workspace then\n\t\treturn object\n\telse\n\t\treturn closestParentToWorkspace(object.Parent, roomModel)\n\tend\nend\n\n--Categorises a model based on the location of the start and end points of the path in the model\nfunction RoomPackager:CategoriseModel(pathModel)\n\tif pathModel:FindFirstChild(\"EndParts\") then\n\t\treturn game.ReplicatedStorage.PathModules.Branch\n\telseif pathModel.Start.Position.Y < pathModel.End.Position.Y - 5 then\n\t\treturn game.ReplicatedStorage.PathModules.GoingUp\n\telseif pathModel.Start.Position.Y > pathModel.End.Position.Y + 5 then\n\t\treturn game.ReplicatedStorage.PathModules.GoingDown\n\telse\n\t\treturn game.ReplicatedStorage.PathModules.SameHeight\n\tend\nend\n\nlocal function addBehavioursRecur(model, behaviourFolder)\n\tlocal children = model:GetChildren()\n\tfor i = 1, #children do\n\t\tif children[i]:isA(\"BasePart\") then\n\t\t\tbehaviourFolder:Clone().Parent = children[i]\n\t\telse\n\t\t\taddBehavioursRecur(children[i], behaviourFolder)\n\t\tend\n\tend\nend\n\nRoomPackager.setUpBehaviours = function(roomModel)\n\tif roomModel:FindFirstChild(\"Behaviours\") then\n\t\taddBehavioursRecur(roomModel, roomModel.Behaviours)\n\t\treturn\n\tend\n\tlocal children = roomModel:GetChildren()\n\tfor i = 1, #children do\n\t\tRoomPackager.setUpBehaviours(children[i])\n\tend\nend\n\nlocal function processPart(roomModel, part, parts)\n\tif part.Parent == roomModel then return end\n\tif part.Name == \"End\" and roomModel:FindFirstChild(\"End\") then\n\t\tlocal endsModel = Instance.new(\"Model\") --Used for branching the path\n\t\tendsModel.Name = \"EndParts\"\n\t\tendsModel.Parent = roomModel\n\t\tpart.Parent = endsModel\n\t\troomModel:FindFirstChild(\"End\").Parent = endsModel\n\telseif part.Name == \"End\" and roomModel:FindFirstChild(\"EndParts\") then\n\t\tpart.Parent = roomModel:FindFirstChild(\"EndParts\")\n\telseif part.Name == \"End\" then\n\t\tpart.Parent = roomModel\n\telse\n\t\tlocal topLevelParent = closestParentToWorkspace(part, roomModel)\n\t\tif topLevelParent ~= nil then\n\t\t\tif topLevelParent:isA(\"BasePart\") then\n\t\t\t\tlocal connectedParts = topLevelParent:GetConnectedParts(true)\n\t\t\t\tfor _, connectedPart in pairs(connectedParts) do\n\t\t\t\t\tif connectedPart.Name == \"End\" then\n\t\t\t\t\t\ttable.insert(parts, connectedPart)\n\t\t\t\t\telse\n\t\t\t\t\t\tlocal conTopLevelParent = closestParentToWorkspace(connectedPart, roomModel)\n\t\t\t\t\t\tif conTopLevelParent and conTopLevelParent ~= topLevelParent then\n\t\t\t\t\t\t\tconTopLevelParent.Parent = roomModel\n\t\t\t\t\t\tend\n\t\t\t\t\tend\n\t\t\t\tend\n\t\t\tend\n\t\t\ttopLevelParent.Parent = roomModel\n\t\tend\n\tend\nend\n\nfunction RoomPackager:PackageRoom(roomBasePlate)\n\tlocal roomModel = Instance.new(\"Model\")\n\troomModel.Name = \"Path\"\n\troomModel.Parent = game.ReplicatedStorage.PathModules\n\n\tlocal regions = self:RegionsFromBasePlate(roomBasePlate)\n\n\tfor i = 1, #regions do\n\t\t--Repeatedly finds 100 parts in the region until none are left\n\t\twhile true do\n\t\t\tlocal parts = game.Workspace:FindPartsInRegion3(regions[i], nil, 100)\n\t\t\tif #parts == 0 then\n\t\t\t\tbreak\n\t\t\tend\n\t\t\tfor _, part in pairs(parts) do\n\t\t\t\tprocessPart(roomModel, part, parts)\n\t\t\tend\n\t\tend\n\tend\n\n\t--Set-up model for use in the path (parts for locating the path are made transparent)\n\troomBasePlate.Transparency = 1\n\troomBasePlate.Parent = roomModel\n\troomModel:FindFirstChild(\"Start\", true).Parent = roomModel\n\troomModel:FindFirstChild(\"Start\", true).Transparency = 1\n\tif roomModel:FindFirstChild(\"EndParts\") then\n\t\tlocal ends = roomModel:FindFirstChild(\"EndParts\"):GetChildren()\n\t\tfor i = 1, #ends do\n\t\t\tends[i].Transparency = 1\n\t\tend\n\telse\n\t\troomModel.End.Transparency = 1\n\tend\n\troomModel.PrimaryPart = roomBasePlate\n\troomModel.Parent = self:CategoriseModel(roomModel)\n\tRoomPackager.setUpBehaviours(roomModel)\n\treturn roomModel\nend\n\nreturn RoomPackager"
+              }
+            },
+            "init.server.lua": {
+              "contents": {
+                "Bytes": "-- Line Runner\n-- TheGamer101\n\nlocal path = nil\ncoroutine.wrap(function() path = require(script.PathCreator) end)()\n\n-- Handle remote functions/events\nfunction runStarting(player)\n\tif player.Character then\n\t\tif player.Character:FindFirstChild(\"FastStartScript\") then\n\t\t\tplayer.Character.FastStartScript.Disabled = false\n\t\tend\n\tend\nend\ngame.ReplicatedStorage.RemoteEvents.RunStarting.OnServerEvent:connect(runStarting)\n\nlocal behaviourModules = {}\n\ncoroutine.wrap(function()\n\tfor _, behaviourScript in ipairs(script.Behaviours:GetChildren()) do\n\t\tlocal success, errMessage = pcall(function()\n\t\t\tbehaviourModules[behaviourScript.Name] = require(behaviourScript)\n\t\tend)\n\t\tif not success then\n\t\t\twarn(\"Failed to load module\" ..behaviourScript.Name.. \".\\n\" ..errMessage)\n\t\tend\n\tend\nend)()\n\nfunction executeBehaviour(player, character, brickTouched, behaviourName)\n\tif behaviourModules[behaviourName] ~= nil then\n\t\tbehaviourModules[behaviourName]:ExecuteBehaviour(brickTouched, character)\n\tend\nend\ngame.ReplicatedStorage.RemoteEvents.ExecuteBehaviour.OnServerEvent:connect(executeBehaviour)\n\n-- Initialization\nlocal lastActivePath = {}\n\nif game.Workspace:FindFirstChild(\"BasePlate\") then\n\tgame.Workspace.BasePlate:Destroy()\nend\n\nlocal tracksModel = Instance.new(\"Model\")\ntracksModel.Name = \"Tracks\"\ntracksModel.Parent = game.Workspace\n\nfunction packagePathModels()\n\tlocal pathPackager = require(script.PathPackager)\n\twhile true do\n\t\tlocal pathBase = game.Workspace:FindFirstChild(\"PathBase\", true)\n\t\tif pathBase then\n\t\t\tpathPackager:PackageRoom(pathBase)\n\t\telse\n\t\t\tbreak\n\t\tend\n\tend\nend\n\ncoroutine.wrap(function() packagePathModels() end)()\n\n-- Leaderboard\nfunction updateHighScorePlayerPoints(newValue, player)\n\tlocal pointsService = game:GetService(\"PointsService\")\n\tlocal currentBalance = pointsService:GetGamePointBalance(player.userId)\n\tlocal amountToAward = newValue - currentBalance\n\tpcall(function() pointsService:AwardPoints(player.userId, amountToAward) end)\nend\n\nfunction checkNewHighScore(player)\n\tif player:FindFirstChild(\"leaderstats\") then\n\t\tif player.userId > 0 then\n\t\t\tlocal storedScore = 0\n\t\t\tpcall(function() storedScore = game:GetService(\"PointsService\"):GetGamePointBalance(player.userId) end)\n\t\t\tif storedScore < player.leaderstats[\"High Score\"].Value then\n\t\t\t\tupdateHighScorePlayerPoints(player.leaderstats[\"High Score\"].Value, player)\n\t\t\tend\n\t\tend\n\tend\nend\n\nfunction loadLeaderstats(player)\n\tlocal stats = Instance.new(\"IntValue\")\n\tstats.Name = \"leaderstats\"\n\n\tlocal highScore = Instance.new(\"IntValue\")\n\thighScore.Name = \"High Score\"\n\thighScore.Parent = stats\n\thighScore.Value = 0\n\n\tcoroutine.wrap(function()\n\t\tpcall(function()\n\t\t\thighScore.Value = game:GetService(\"PointsService\"):GetGamePointBalance(player.userId)\n\t\tend)\n\tend)()\n\n\tlocal currentScore = Instance.new(\"IntValue\")\n\tcurrentScore.Name = \"Score\"\n\tcurrentScore.Parent = stats\n\n\tstats.Parent = player\nend\n\nfunction initialiseRunStats(player)\n\tif player:FindFirstChild(\"RunStats\") then\n\t\tplayer.RunStats.Distance.Value = 0\n\t\tplayer.RunStats.CoinsCollected.Value = 0\n\tend\nend\n\nfunction showResults(player)\n\tlocal resultsGUI = game.ServerStorage.GUIs.PostRunGUI:Clone()\n\tresultsGUI.Frame.DistanceValue.Text = player.RunStats.Distance.Value\n\tresultsGUI.Frame.CoinsValue.Text = player.RunStats.CoinsCollected.Value\n\tresultsGUI.Frame.ScoreValue.Text = player.leaderstats.Score.Value\n\n\tresultsGUI.Parent = player.PlayerGui\n\treturn resultsGUI\nend\n\nfunction initialiseNewRun(player, delayTime, charExpected, showLastResults)\n\tif not path then\n\t\twhile not path do\n\t\t\twait()\n\t\tend\n\tend\n\n\tlocal lastResultsGUI = nil\n\tif showLastResults then\n\t\tlastResultsGUI = showResults(player)\n\tend\n\n\tif delayTime ~= 0 then\n\t\twait(delayTime)\n\tend\n\n\tif lastResultsGUI ~= nil then\n\t\tlastResultsGUI:Destroy()\n\tend\n\n\tif player and player.Parent then\n\t\t-- charExpected is needed to avoid calling LoadCharacter on players leaving the game\n\t\tif player.Character or charExpected == false then\n\t\t\tplayer:LoadCharacter()\n\n\t\t\tinitialiseRunStats(player)\n\n\t\t\tlocal playersPath = path()\n\t\t\tlastActivePath[player.Name] = playersPath\n\t\t\tplayersPath:init(player.Name)\n\t\tend\n\tend\nend\n\nfunction setUpPostRunStats(player)\n\tlocal folder = Instance.new(\"Folder\")\n\tfolder.Name = \"RunStats\"\n\tfolder.Parent = player\n\tlocal currentDistance = Instance.new(\"IntValue\")\n\tcurrentDistance.Name = \"Distance\"\n\tcurrentDistance.Value = 0\n\tcurrentDistance.Parent = folder\n\tlocal coinsCollected = Instance.new(\"IntValue\")\n\tcoinsCollected.Name = \"CoinsCollected\"\n\tcoinsCollected.Value = 0\n\tcoinsCollected.Parent = folder\nend\n\nfunction onPlayerEntered(player)\n\tplayer.CharacterAdded:connect(function(character)\n\t\tlocal humanoid = character:WaitForChild(\"Humanoid\")\n\t\tif humanoid then\n\t\t\thumanoid.Died:connect(function()\n\t\t\t\tinitialiseNewRun(player, 4, true, true)\n\t\t\t\tcheckNewHighScore(player)\n\t\t\tend)\n\t\tend\n\tend)\n\n\t-- Initial loading\n\tloadLeaderstats(player)\n\tsetUpPostRunStats(player)\n\n\t-- Start game\n\tinitialiseNewRun(player, 0, false, false)\nend\ngame.Players.PlayerAdded:connect(onPlayerEntered)\n\nfunction onPlayerRemoving(player)\n\tlocal track = game.Workspace.Tracks:FindFirstChild(player.Name)\n\tif track ~= nil then\n\t\ttrack:Destroy()\n\tend\nend\ngame.Players.PlayerRemoving:connect(onPlayerRemoving)\n\nfor _, player in pairs(game.Players:GetChildren()) do\n\tonPlayerEntered(player)\nend\n\n\n"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "ServerScriptService/Server_Main/Behaviours": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "Boost.lua": {
+              "contents": {
+                "Bytes": "local module = {}\n\nlocal equalizingForce = 236 / 1.2 -- amount of force required to levitate a mass\nlocal gravity = .90 -- things float at > 1\n\nfunction recursiveGetLift(node)\n\tlocal m = 0\n\tlocal c = node:GetChildren()\n\tfor i=1,#c do\n\t\tif c[i]:IsA(\"BasePart\") then\n\t\t\tif c[i].Name == \"Handle\" then\n\t\t\t\tm = m + (c[i]:GetMass() * equalizingForce * 1) -- makes hats weightless, so different hats don't change your jump height\n\t\t\telse\n\t\t\t\tm = m + (c[i]:GetMass() * equalizingForce * gravity)\n\t\t\tend\n\t\tend\n\t\tm = m + recursiveGetLift(c[i])\n\tend\n\treturn m\nend\n\nfunction module:ExecuteBehaviour(brickTouched, character)\n\tif character:FindFirstChild(\"HumanoidRootPart\") ~= nil then\n\t\tif character.Humanoid.Health > 0 then\n\t\t\tif character.HumanoidRootPart:FindFirstChild(\"BoostEffect\") == nil then\n\t\t\t\tlocal boostEffect = Instance.new(\"BodyForce\")\n\t\t\t\tboostEffect.Name = \"BoostEffect\"\n\t\t\t\tboostEffect.force = Vector3.new(0, recursiveGetLift(character) ,0)\n\t\t\t\tboostEffect.Parent = character.HumanoidRootPart\n\t\t\t\tgame:GetService(\"Debris\"):AddItem(boostEffect, .8)\n\t\t\t\twait(.5)\n\t\t\t\tboostEffect.Name = \"OldBoostEffect\"\n\t\t\tend\n\t\tend\n\tend\nend\n\nreturn module\n"
+              }
+            },
+            "CoinCollected.lua": {
+              "contents": {
+                "Bytes": "local module = {}\n\nfunction module:ExecuteBehaviour(brickTouched, character)\n\tif character:FindFirstChild(\"Humanoid\") ~= nil then\n\t\tif character.Humanoid.Health > 0 then\n\t\t\tif brickTouched ~= nil then\n\t\t\t\tif brickTouched.Parent ~= nil then\n\t\t\t\t\tlocal player = game.Players:GetPlayerFromCharacter(character)\n\t\t\t\t\tif player ~= nil then\n\t\t\t\t\t\tif brickTouched.Parent:FindFirstChild(\"Coin\") then\n\t\t\t\t\t\t\tif brickTouched.Parent.Coin:FindFirstChild(\"Sound\") then\n\t\t\t\t\t\t\t\tlocal sound = brickTouched.Parent.Coin.Sound:Clone()\n\t\t\t\t\t\t\t\tsound.Parent = player.PlayerGui\n\t\t\t\t\t\t\t\tsound:Play()\n\t\t\t\t\t\t\t\tgame:GetService(\"Debris\"):AddItem(sound, 1)\n\t\t\t\t\t\t\tend\n\t\t\t\t\t\tend\n\t\t\t\t\t\tbrickTouched.Parent:Destroy()\n\t\t\t\t\t\tplayer.RunStats.CoinsCollected.Value = player.RunStats.CoinsCollected.Value + 1\n\t\t\t\t\tend\n\t\t\t\tend\n\t\t\tend\n\t\tend\n\tend\nend\n\nreturn module\n\n"
+              }
+            },
+            "Explode.lua": {
+              "contents": {
+                "Bytes": "local module = {}\n\nfunction module:ExecuteBehaviour(brickTouched, character)\n\tif character:FindFirstChild(\"HumanoidRootPart\") ~= nil then\n\t\tif character.HumanoidRootPart:FindFirstChild(\"Explosion\") == nil then\n\t\t\tlocal explosion = Instance.new(\"Explosion\")\n\t\t\texplosion.Name = \"Explosion\"\n\t\t\texplosion.BlastRadius = 10\n\t\t\texplosion.BlastPressure = 0\n\t\t\texplosion.Position = character.HumanoidRootPart.Position\n\t\t\texplosion.Parent = character.HumanoidRootPart\n\t\tend\n\tend\nend\n\nreturn module\n\n"
+              }
+            },
+            "Kill.lua": {
+              "contents": {
+                "Bytes": "local module = {}\n\nfunction module:ExecuteBehaviour(brickTouched, character)\n\tif character:FindFirstChild(\"Humanoid\") ~= nil then\n\t\tlocal shield = character:FindFirstChild(\"Shield\")\n\t\tif shield == nil then\n\t\t\tif character.Humanoid.Health > 0 then\n\t\t\t\tcharacter.Humanoid.Health = 0\n\t\t\t\tcharacter:BreakJoints()\n\t\t\tend\n\t\telse\n\t\t\tif shield:isA(\"ForceField\") then\n\t\t\t\tlocal tempShield = Instance.new(\"BoolValue\")\n\t\t\t\ttempShield.Name = \"Shield\"\n\t\t\t\ttempShield.Parent = character\n\t\t\t\tgame:GetService(\"Debris\"):AddItem(tempShield, 1)\n\t\t\t\tshield:Destroy()\n\t\t\tend\n\t\tend\n\tend\nend\n\nreturn module\n"
+              }
+            },
+            "KillWithShield.lua": {
+              "contents": {
+                "Bytes": "local module = {}\n\n--Kills users even if they have a shield\n\nfunction module:ExecuteBehaviour(brickTouched, character)\n\tif character:FindFirstChild(\"Humanoid\") ~= nil then\n\t\tif character.Humanoid.Health > 0 then\n\t\t\tcharacter.Humanoid.Health = 0\n\t\tend\n\tend\nend\n\nreturn module\n"
+              }
+            },
+            "LadderBoost.lua": {
+              "contents": {
+                "Bytes": "local module = {}\n\nlocal equalizingForce = 236 / 1.2 -- amount of force required to levitate a mass\nlocal gravity = .90 -- things float at > 1\n\nfunction recursiveGetLift(node)\n\tlocal m = 0\n\tlocal c = node:GetChildren()\n\tfor i=1,#c do\n\t\tif c[i]:IsA(\"BasePart\") then\n\t\t\tif c[i].Name == \"Handle\" then\n\t\t\t\tm = m + (c[i]:GetMass() * equalizingForce * 1) -- makes hats weightless, so different hats don't change your jump height\n\t\t\telse\n\t\t\t\tm = m + (c[i]:GetMass() * equalizingForce * gravity)\n\t\t\tend\n\t\tend\n\t\tm = m + recursiveGetLift(c[i])\n\tend\n\treturn m\nend\n\nfunction module:ExecuteBehaviour(brickTouched, character)\n\tif character:FindFirstChild(\"HumanoidRootPart\") ~= nil then\n\t\tif character.Humanoid.Health > 0 then\n\t\t\tif character.HumanoidRootPart:FindFirstChild(\"LadderBoostEffect\") == nil then\n\t\t\t\tlocal boostEffectDebounce = Instance.new(\"IntValue\")\n\t\t\t\tboostEffectDebounce.Name = \"LadderBoostEffect\"\n\t\t\t\tboostEffectDebounce.Parent = character.HumanoidRootPart\n\t\t\t\tgame:GetService(\"Debris\"):AddItem(boostEffectDebounce, 2)\n\t\t\t\tlocal boostEffect = Instance.new(\"BodyForce\")\n\t\t\t\tboostEffect.force = Vector3.new(0, recursiveGetLift(character) ,0)\n\t\t\t\tboostEffect.Parent = character.HumanoidRootPart\n\t\t\t\tgame:GetService(\"Debris\"):AddItem(boostEffect, .2)\n\t\t\tend\n\t\tend\n\tend\nend\n\nreturn module\n"
+              }
+            },
+            "Trapdoor.lua": {
+              "contents": {
+                "Bytes": "local module = {}\n\nfunction module:ExecuteBehaviour(brickTouched, character)\n\tfor _, part in pairs(brickTouched.Parent:GetChildren()) do\n\t\tif part:isA(\"BasePart\") then\n\t\t\tpart.Anchored = false\n\t\tend\n\tend\n\twait(.3)\n\tif brickTouched ~= nil and brickTouched.Parent ~= nil then\n\t\tfor _, part in pairs(brickTouched.Parent:GetChildren()) do\n\t\t\tif part:isA(\"BasePart\") then\n\t\t\t\tpart.CanCollide = false\n\t\t\tend\n\t\tend\n\tend\nend\n\nreturn module\n"
+              }
+            },
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "ServerScriptService/Server_Main/PathCreator": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "CharacterHandler.lua": {
+              "contents": {
+                "Bytes": "function makeCharacterHandler()\n\tlocal characterHandler = {}\n\n\tcharacterHandler.SpawnPoint\t= nil\n\n\tcharacterHandler.newHighScore = false\n\t--characterHandler.newHighScore = characterHandler.player.leaderstats[\"High Score\"].Value > 0\n\tcharacterHandler.player = nil\n\tcharacterHandler.character = nil\n\n\t--Updates the score based on how far from the SpawnPoint the character is\n\tfunction characterHandler:UpdateScore()\n\t\tlocal player = characterHandler.player\n\t\tlocal character = characterHandler.character\n\t\tlocal leaderstats = player and player:FindFirstChild(\"leaderstats\") or nil\n\t\tif player and character and leaderstats then\n\t\t\tlocal humanoid = character:FindFirstChildOfClass(\"Humanoid\")\n\t\t\tif not humanoid or not (humanoid.Health > 0) then\n\t\t\t\treturn\n\t\t\tend\n\n\t\t\tlocal torso = character:FindFirstChild(\"HumanoidRootPart\")\n\n\t\t\tif not torso then\n\t\t\t\treturn\n\t\t\tend\n\n\t\t\t-- Sanity check for large score increases\n\t\t\tif characterHandler.SpawnPoint.Z - torso.Position.Z > leaderstats.Score.Value + 100 then\n\t\t\t\treturn\n\t\t\tend\n\n\t\t\t-- Update Score\n\t\t\tplayer.RunStats.Distance.Value = characterHandler.SpawnPoint.Z - torso.Position.Z\n\t\t\tleaderstats.Score.Value = player.RunStats.Distance.Value + player.RunStats.CoinsCollected.Value * 50\n\n\t\t\t-- Update High Score\n\t\t\tif leaderstats.Score.Value > leaderstats[\"High Score\"].Value then\n\t\t\t\t-- First time player, don't show New High Score GUI\n\t\t\t\tif characterHandler.player.leaderstats[\"High Score\"].Value == 0 then\n\t\t\t\t\tcharacterHandler.newHighScore = true\n\t\t\t\tend\n\n\t\t\t\tleaderstats[\"High Score\"].Value = leaderstats.Score.Value\n\n\t\t\t\t-- Show New High Score GUI if they beat their High Score for the first time in this run\n\t\t\t\tif characterHandler.newHighScore == false then\n\t\t\t\t\tcharacterHandler.newHighScore = true\n\t\t\t\t\tgame.ServerStorage.GUIs.HighScore:Clone().Parent = characterHandler.player.PlayerGui\n\t\t\t\tend\n\t\t\tend\n\t\tend\n\tend\n\n\tcharacterHandler.BodyPartPositions = {\n\t\t[\"Head\"] = {},\n\t\t[\"Torso\"] = {},\n\t\t[\"Right Arm\"] = {},\n\t\t[\"Left Arm\"] = {},\n\t\t[\"Right Leg\"] = {},\n\t\t[\"Left Leg\"] = {},\n\t\t[\"HumanoidRootPart\"] = {}\n\t}\n\n\n\tfunction characterHandler:UpdateBodyPartPositions()\n\t\tif characterHandler.character then\n\t\t\tfor _, part in pairs(characterHandler.character:GetChildren()) do\n\t\t\t\tif part:isA(\"BasePart\") then\n\t\t\t\t\tif characterHandler.BodyPartPositions[part.Name] == nil then\n\t\t\t\t\t\tcharacterHandler.BodyPartPositions[part.Name] = {}\n\t\t\t\t\tend\n\t\t\t\t\ttable.insert(characterHandler.BodyPartPositions[part.Name], 1, part.CFrame)\n\t\t\t\t\tif #characterHandler.BodyPartPositions[part.Name] > 120 then\n\t\t\t\t\t\ttable.remove(characterHandler.BodyPartPositions[part.Name], 121)\n\t\t\t\t\tend\n\t\t\t\tend\n\t\t\tend\n\t\tend\n\tend\n\n\t--Can collide is false for the previously cloned handles of the hats\n\tlocal function canCollideParts(character)\n\t\tlocal parts = character:GetChildren()\n\t\tfor i = 1, #parts do\n\t\t\tif parts[i]:isA(\"BasePart\") then\n\t\t\t\tif parts[i].CanCollide == false then\n\t\t\t\t\tparts[i].CanCollide = true\n\t\t\t\tend\n\t\t\tend\n\t\tend\n\tend\n\n\tfunction characterHandler:init(startPathModel, playerName)\n\t\tcharacterHandler.player = game.Players:FindFirstChild(playerName)\n\t\tif characterHandler.player ~= nil then\n\t\t\tcharacterHandler.character = characterHandler.player.Character\n\n\t\t\tif not characterHandler.character then\n\t\t\t\tcharacterHandler.player.CharacterAdded:wait()\n\t\t\t\tcharacterHandler.character = characterHandler.player.Character\n\t\t\tend\n\n\t\t\tcharacterHandler.newHighScore = characterHandler.player.leaderstats[\"High Score\"].Value > 0\n\t\t\tcharacterHandler.SpawnPoint = startPathModel.Start.Position + Vector3.new(0, 4, -3)\n\t\t\tcharacterHandler.character:MoveTo(characterHandler.SpawnPoint)\n\t\t\tlocal updateScoreConnection = game:GetService(\"RunService\").Heartbeat:connect(function() self:UpdateScore() end)\n\t\t\tcharacterHandler.updatePositionsConnection = game:GetService(\"RunService\").Heartbeat:connect(function() self:UpdateBodyPartPositions() end)\n\t\t\tcharacterHandler.character.Humanoid.Died:connect(function()\n\t\t\t\tupdateScoreConnection:disconnect()\n\t\t\t\tcanCollideParts(characterHandler.character)\n\t\t\tend)\n\t\t\tcharacterHandler.player.CharacterRemoving:connect(function() characterHandler.updatePositionsConnection:disconnect() end)\n\t\tend\n\tend\n\n\treturn characterHandler\nend\n\nreturn makeCharacterHandler"
+              }
+            },
+            "init.lua": {
+              "contents": {
+                "Bytes": "local function makePathObject()\n\tlocal Path = {}\n\n\tlocal pathModels = nil\n\n\tlocal MODELS_AHEAD = 5\n\n\tPath.LastAdded = {}\n\tPath.pathModels = {}\n\n\tPath.Branches = {}\n\n\tPath.multipleBranches = false\n\tPath.BranchAt = nil\n\tPath.LastBranch = nil\n\n\tPath.AvailableModules = {}\n\n\tPath.CharacterHandler = require(script.CharacterHandler)()\n\n\t--Set up AvailableModules so all modules can be accessed easily\n\tfor _, pathCategory in pairs(game.ReplicatedStorage.PathModules:GetChildren()) do\n\t\tfor _, pathModule in pairs(pathCategory:GetChildren()) do\n\t\t\ttable.insert(Path.AvailableModules, pathModule)\n\t\tend\n\tend\n\n\t--Takes the given Vector3 value away from the position value of every part in a given model\n\tlocal function moveOffset(model, vector)\n\t\tif model:isA(\"Model\") or model:isA(\"Folder\") then\n\t\t\tfor _, object in pairs(model:GetChildren()) do\n\t\t\t\tmoveOffset(object, vector)\n\t\t\tend\n\t\telseif model:isA(\"BasePart\") then\n\t\t\tmodel.Position = model.Position - vector\n\t\tend\n\tend\n\n\t--Adds a new branch to the path, adds multiple path models at all the possible EndParts of the model\n\tfunction Path:AddNewBranch(lastPathModel, playerName, pathType)\n\t\tPath.Branches = {}\n\t\tlocal endParts = lastPathModel:FindFirstChild(\"EndParts\")\n\t\tendParts = endParts:GetChildren()\n\t\tif #endParts == 2 then\n\t\t\t--Special case for 2 endParts, 1 endPart should go up and the other should go down\n\t\t\t--even if one end part continues at the same height as the Start part of the model\n\t\t\tlocal top = nil\n\t\t\tlocal bottom = nil\n\t\t\tif endParts[1].Position.Y > endParts[2].Position.Y then\n\t\t\t\ttop = endParts[1]\n\t\t\t\tbottom = endParts[2]\n\t\t\telse\n\t\t\t\ttop = endParts[2]\n\t\t\t\tbottom = endParts[1]\n\t\t\tend\n\t\t\ttop.Parent = lastPathModel\n\t\t\tlocal newBranch = self:addNewPathModel(lastPathModel, playerName, \"GoingUp\")\n\t\t\tnewBranch.CurrentBranchValue.Value = newBranch.CurrentBranchValue.Value + 1\n\t\t\tPath.Branches[newBranch.CurrentBranchValue.Value] = top.Position\n\t\t\ttop.Parent = lastPathModel.EndParts\n\t\t\tbottom.Parent = lastPathModel\n\t\t\tlocal newBranch = self:addNewPathModel(lastPathModel, playerName, \"GoingDown\")\n\t\t\tnewBranch.CurrentBranchValue.Value = newBranch.CurrentBranchValue.Value + 2\n\t\t\tPath.Branches[newBranch.CurrentBranchValue.Value] = bottom.Position\n\t\telse\n\t\t\t--Continues the path up, down or straight depending on where the End part is relative to the middle endPart of the branch\n\t\t\ttable.sort(endParts,function(a, b) return a.Position.Y < b.Position.Y end)\n\t\t\tfor i = 1, #endParts do\n\t\t\t\tendParts[i].Parent = lastPathModel\n\t\t\t\tif endParts[i].Position.Y > endParts[math.floor((#endParts + 1)/2)].Position.Y then\n\t\t\t\t\tlocal newBranch = self:addNewPathModel(lastPathModel, playerName, \"GoingUp\")\n\t\t\t\t\tnewBranch.CurrentBranchValue.Value = newBranch.CurrentBranchValue.Value + i\n\t\t\t\t\tPath.Branches[newBranch.CurrentBranchValue.Value] = endParts[i].Position\n\t\t\t\telseif endParts[i].Position.Y < endParts[math.floor((#endParts + 1)/2)].Position.Y then\n\t\t\t\t\tlocal newBranch = self:addNewPathModel(lastPathModel, playerName, \"GoingDown\")\n\t\t\t\t\tnewBranch.CurrentBranchValue.Value = newBranch.CurrentBranchValue.Value + i\n\t\t\t\t\tPath.Branches[newBranch.CurrentBranchValue.Value] = endParts[i].Position\n\t\t\t\telse\n\t\t\t\t\tlocal newBranch = self:addNewPathModel(lastPathModel, playerName, \"SameHeight\")\n\t\t\t\t\tnewBranch.CurrentBranchValue.Value = newBranch.CurrentBranchValue.Value + i\n\t\t\t\t\tPath.Branches[newBranch.CurrentBranchValue.Value] = endParts[i].Position\n\t\t\t\tend\n\t\t\t\tif i ~= #endParts then\n\t\t\t\t\tendParts[i].Parent = lastPathModel.EndParts\n\t\t\t\tend\n\t\t\tend\n\t\tend\n\tend\n\n\t--Adds a new model to the part, pathType is the folder in ReplicatedStorage.PathModules\n\t--from which to select a random path model. pathType \"random\" selects from all the available path models\n\tfunction Path:addNewPathModel(lastPathModel, playerName, pathType)\n\t\tif lastPathModel:FindFirstChild(\"End\") then\n\t\t\tlocal pathModelToAdd = nil\n\t\t\tif pathType == \"random\" then\n\t\t\t\t--if there are currently multiple branches we continue each branch at the height it's at until it can be closed\n\t\t\t\tif Path.multipleBranches == false then\n\t\t\t\t\tpathModelToAdd = Path.AvailableModules[math.random(1, #Path.AvailableModules)]:Clone()\n\t\t\t\telse\n\t\t\t\t\tlocal pathModelsSameHeight = game.ReplicatedStorage.PathModules.SameHeight:GetChildren()\n\t\t\t\t\tpathModelToAdd = pathModelsSameHeight[math.random(1, #pathModelsSameHeight)]:Clone()\n\t\t\t\tend\n\t\t\telse\n\t\t\t\tlocal availModules = game.ReplicatedStorage.PathModules[pathType]:GetChildren()\n\t\t\t\tpathModelToAdd = availModules[math.random(1, #availModules)]:Clone()\n\t\t\tend\n\t\t\tlocal positionDifference = pathModelToAdd.Start.Position - lastPathModel.End.Position + Vector3.new(0, 0, (pathModelToAdd.Start.Size.Z + lastPathModel.End.Size.Z)/2)\n\t\t\tlocal addedPath = pathModelToAdd:Clone()\n\t\t\tmoveOffset(addedPath, positionDifference)\n\t\t\t--The CurrentBranchValue IntValue is used for closing branches of the path once the player passes the decision point\n\t\t\tlastPathModel.CurrentBranchValue:Clone().Parent = addedPath\n\t\t\taddedPath.Parent = game.Workspace.Tracks[playerName]\n\t\t\ttable.insert(Path.pathModels, addedPath)\n\t\t\ttable.insert(Path.LastAdded, addedPath)\n\t\t\tif addedPath:FindFirstChild(\"EndParts\") then\n\t\t\t\tPath.multipleBranches = true\n\t\t\t\tPath.BranchAt = addedPath.EndParts:FindFirstChild(\"End\").Position.Z\n\t\t\tend\n\t\t\treturn addedPath\n\t\telse\n\t\t\tself:AddNewBranch(lastPathModel, playerName, pathType)\n\t\tend\n\tend\n\n\tlocal function removeFromTable(item, theTable)\n\t\tfor i = 1, #theTable do\n\t\t\tif theTable[i] == item then\n\t\t\t\ttable.remove(theTable, i)\n\t\t\t\tbreak\n\t\t\tend\n\t\tend\n\tend\n\n\t-- Checks if the player has made a decision on the currently open branch\n\t-- closes the branch if the player has already made a decision\n\tfunction Path:tryCloseBranches(playerName)\n\t\tlocal player = game.Players:FindFirstChild(playerName)\n\t\tif player.Character.HumanoidRootPart.Position.Z < Path.BranchAt then\n\t\t\tPath.multipleBranches = false\n\t\t\tPath.LastBranch = Path.BranchAt\n\t\t\tlocal closest = nil\n\t\t\tlocal closestValue = nil\n\t\t\t-- Check which branch the player selected based on the distance of the character from the End part of the branch\n\t\t\tfor i, v in pairs(Path.Branches) do\n\t\t\t\tif closest == nil then\n\t\t\t\t\tclosest = i\n\t\t\t\t\tclosestValue = (player.Character.HumanoidRootPart.Position - v).magnitude\n\t\t\t\telse\n\t\t\t\t\tif (player.Character.HumanoidRootPart.Position - v).magnitude < closestValue then\n\t\t\t\t\t\tclosest = i\n\t\t\t\t\t\tclosestValue = (player.Character.HumanoidRootPart.Position - v).magnitude\n\t\t\t\t\tend\n\t\t\t\tend\n\t\t\tend\n\t\t\t-- Remove all path models that have a different CurrentBranchValue than the path the player selected\n\t\t\tfor _, pathModel in pairs(game.Workspace.Tracks[player.Name]:GetChildren()) do\n\t\t\t\tif pathModel:isA(\"Model\") then\n\t\t\t\t\tif pathModel:FindFirstChild(\"CurrentBranchValue\") then\n\t\t\t\t\t\tif pathModel.CurrentBranchValue.Value ~= closest then\n\t\t\t\t\t\t\tgame:GetService(\"Debris\"):AddItem(pathModel, 3)\n\t\t\t\t\t\t\tremoveFromTable(pathModel, Path.pathModels)\n\t\t\t\t\t\t\tremoveFromTable(pathModel, Path.LastAdded)\n\t\t\t\t\t\tend\n\t\t\t\t\tend\n\t\t\t\tend\n\t\t\tend\n\t\tend\n\tend\n\n\t-- Check if the path needs to be extended based on the position of the player\n\tfunction Path:CheckExtendPath(playerName)\n\t\tlocal player = game.Players:FindFirstChild(playerName)\n\t\tif Path.LastAdded[1] then\n\t\t\tif player.Character.HumanoidRootPart.Position.Z < Path.LastAdded[1].Start.Position.Z + Path.LastAdded[1].PathBase.Size.Z*2 then\n\t\t\t\tself:addNewPathModel(Path.LastAdded[1], playerName, \"random\")\n\t\t\t\ttable.remove(Path.LastAdded, 1)\n\t\t\tend\n\t\telse\n\t\t\ttable.remove(Path.LastAdded, 1)\n\t\tend\n\tend\n\n\t-- Check if a path model is far enough of screen to be removed\n\tfunction Path:CheckRemovePart(playerName)\n\t\tlocal player = game.Players:FindFirstChild(playerName)\n\t\tif player.Character.HumanoidRootPart.Position.Z < Path.pathModels[1].End.Position.Z - Path.pathModels[1].PathBase.Size.Z*3 then\n\t\t\tPath.pathModels[1]:Destroy()\n\t\t\ttable.remove(Path.pathModels, 1)\n\t\tend\n\tend\n\n\t-- Extends the path as the player moves\n\tfunction Path:AddPathAsPlayerMoves(playerName)\n\t\tlocal player = game.Players:FindFirstChild(playerName)\n\t\tif player then\n\t\t\tif not player.Character then\n\t\t\t\tplayer.CharacterAdded:wait()\n\t\t\tend\n\n\t\t\tlocal extendPathConnection = game:GetService(\"RunService\").Heartbeat:connect(function()\n\t\t\t\tif player.Character:FindFirstChild(\"HumanoidRootPart\") then\n\t\t\t\t\tif Path.multipleBranches == true then\n\t\t\t\t\t\tself:tryCloseBranches(playerName)\n\t\t\t\t\tend\n\t\t\t\t\tself:CheckExtendPath(playerName)\n\t\t\t\t\tself:CheckRemovePart(playerName)\n\t\t\t\tend\n\t\t\tend)\n\n\t\t\tplayer.CharacterRemoving:connect(function() extendPathConnection:disconnect() end)\n\t\t\tplayer.Character.Humanoid.Died:connect(function() extendPathConnection:disconnect() end)\n\t\tend\n\tend\n\n\t-- Creates the initial path model for the path\n\tfunction Path:AddFirstPathModel(trackModel)\n\t\tlocal pathToAdd = nil\n\t\tif game.ReplicatedStorage.PathModules:FindFirstChild(\"StartModule\") ~= nil then\n\t\t\tpathToAdd = game.ReplicatedStorage.PathModules.StartModule:FindFirstChild(\"Start\")\n\t\telse\n\t\t\tpathToAdd = Path.AvailableModules[math.random(1, #Path.AvailableModules)]\n\t\tend\n\t\tpathToAdd = pathToAdd:Clone()\n\t\tpathToAdd.Parent = trackModel\n\t\tpathToAdd:MoveTo(trackModel.Location.Value)\n\n\t\tlocal branchModifier = Instance.new(\"IntValue\")\n\t\tbranchModifier.Name = \"CurrentBranchValue\"\n\t\tbranchModifier.Value = 0\n\t\tbranchModifier.Parent = pathToAdd\n\n\t\ttable.insert(Path.pathModels, pathToAdd)\n\t\ttable.insert(Path.LastAdded, pathToAdd)\n\t\treturn pathToAdd\n\tend\n\n\t-- Finds an open slot for the track, for possible multiplayer\n\tlocal function findOpenSlot()\n\t\tlocal takenLocations = {}\n\t\tlocal defaultLocation = Vector3.new(0, 100, 0)\n\t\tfor _, track in pairs(game.Workspace.Tracks:GetChildren()) do\n\t\t\ttable.insert(takenLocations, track.Location.Value)\n\t\tend\n\t\ttable.sort(takenLocations, function(a, b) return (a.X < b.X) end)\n\t\tfor i = 1, #takenLocations do\n\t\t\tif (takenLocations[i].X > defaultLocation.X) then\n\t\t\t\tbreak\n\t\t\telse\n\t\t\t\tdefaultLocation = Vector3.new(defaultLocation.X + 50, 100, 0)\n\t\t\tend\n\t\tend\n\t\treturn defaultLocation\n\tend\n\n\tfunction Path:init(playerName)\n\t\tlocal previousTrack = game.Workspace.Tracks:FindFirstChild(playerName)\n\t\tif (previousTrack) then\n\t\t\tpreviousTrack:Destroy()\n\t\tend\n\n\t\tlocal trackModel = Instance.new(\"Model\")\n\t\ttrackModel.Name = playerName\n\t\tlocal location = Instance.new(\"Vector3Value\")\n\t\tlocation.Name = \"Location\"\n\t\tlocation.Value = findOpenSlot()\n\t\tlocation.Parent = trackModel\n\t\ttrackModel.Parent = game.Workspace.Tracks\n\n\t\tlocal firstAddedPath = self:AddFirstPathModel(trackModel)\n\n\t\tfor i = 1, MODELS_AHEAD do\n\t\t\tself:addNewPathModel(Path.LastAdded[1], playerName, \"random\")\n\t\t\ttable.remove(Path.LastAdded, 1)\n\t\tend\n\n\t\twait()\n\t\tPath.CharacterHandler:init(firstAddedPath, playerName)\n\t\tself:AddPathAsPlayerMoves(playerName)\n\tend\n\n\treturn Path\nend\n\nreturn makePathObject\n\t"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "ServerStorage": {
+      "contents": {
+        "Vfs": {
+          "files": {},
+          "tree": {}
+        }
+      }
+    },
+    "ServerStorage/GUIs": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "ServerStorage/GUIs/HighScore": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "GUITweenIn.client.lua": {
+              "contents": {
+                "Bytes": "local onScreenPosition = UDim2.new(0.5, -375, 0, 36)\nlocal offScreenPosition = UDim2.new(0.5, -375, 0, -140)\n\nscript.Parent.Frame:TweenPosition(onScreenPosition, \"Out\", \"Quad\", 1, true)\nwait(1.5)\nscript.Parent.Frame:TweenPosition(offScreenPosition, \"Out\", \"Quad\", 1, true)\nwait(1)\n\nscript.Parent:Destroy()\n"
+              }
+            },
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"className\": \"ScreenGui\",\n  \"properties\": {\n    \"DisplayOrder\": {\n      \"Type\": \"Int32\",\n      \"Value\": 0\n    }\n  },\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "ServerStorage/GUIs/RevivingGUI": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "GUITweenIn.client.lua": {
+              "contents": {
+                "Bytes": "local onScreenPosition = UDim2.new(0.5, -375, 0, 36)\nlocal offScreenPosition = UDim2.new(0.5, -375, 0, -140)\n\nscript.Parent.Frame:TweenPosition(onScreenPosition, \"Out\", \"Quad\", 1, true)\nwait(1.5)\nscript.Parent.Frame:TweenPosition(offScreenPosition, \"Out\", \"Quad\", 1.5, true)\nwait(1.5)\n\nscript.Parent:Destroy()\n"
+              }
+            },
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"className\": \"ScreenGui\",\n  \"properties\": {\n    \"DisplayOrder\": {\n      \"Type\": \"Int32\",\n      \"Value\": 0\n    }\n  },\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "ServerStorage/Scripts": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "CoinMagnet.server.lua": {
+              "contents": {
+                "Bytes": "local character = script.Parent\nlocal player = game.Players:GetPlayerFromCharacter(character)\nscript.Parent:WaitForChild(\"HumanoidRootPart\")\nlocal torso = script.Parent.HumanoidRootPart\n\ngame:GetService(\"RunService\").Heartbeat:connect(function()\n\tlocal playersTrack = game.Workspace.Tracks:FindFirstChild(player.Name)\n\tif playersTrack then\n\t\tif playersTrack:FindFirstChild(\"Coins\") then\n\t\t\tlocal coins = playersTrack.Coins:GetChildren()\n\t\t\tfor i = 1, #coins do\n\t\t\t\tif (coins[i].Coin.Position - torso.Position).magnitude < 50 then\n\t\t\t\t\tcoins[i].Coin.BodyPosition.maxForce = Vector3.new(500000000, 500000000, 500000000)\n\t\t\t\t\tif torso.Position.Z > coins[i].Coin.Position.Z then\n\t\t\t\t\t\tcoins[i].Coin.BodyPosition.position = torso.Position\n\t\t\t\t\t\tcoins[i].Coin.BodyPosition.P = 1500\n\t\t\t\t\telse\n\t\t\t\t\t\t--Needs to anticipate where the player is going\n\t\t\t\t\t\tcoins[i].Coin.BodyPosition.position = Vector3.new(torso.Position.X, torso.Position.Y, torso.Position.Z - 10)\n\t\t\t\t\t\tcoins[i].Coin.BodyPosition.P = 2500\n\t\t\t\t\tend\n\t\t\t\t\tcoins[i].CoinBoundingBox.Position = coins[i].Coin.Position\n\t\t\t\t\tif (coins[i].Coin.Position - torso.Position).magnitude < 5 then\n\t\t\t\t\t\tcoins[i].CoinBoundingBox.Position = Vector3.new(torso.Position.X, torso.Position.Y, torso.Position.Z - 3)\n\t\t\t\t\tend\n\t\t\t\tend\n\t\t\tend\n\t\tend\n\tend\nend)\n\n\n"
+              }
+            },
+            "CoinScript.server.lua": {
+              "contents": {
+                "Bytes": "local coin = script.Parent\nlocal coinModel = coin.Parent\nlocal trackModel = coinModel.Parent\nlocal tracksModel = trackModel.Parent\n\ncoin.BodyPosition.position = script.Parent.Position\ncoin.BodyGyro.cframe = CFrame.new(\n\t0, 0, 0,\n\t0, -1, 0,\n\t0, 0, 0,\n\t0, 0, 0\n)\ncoin.RotVelocity = Vector3.new(0, 5, 0)\n\nif coinModel.Parent ~= game.Workspace then\n\tif game.Workspace:FindFirstChild(\"Tracks\") then\n\t\tif tracksModel:FindFirstChild(\"Coins\") == nil then\n\t\t\tlocal coinsModel = Instance.new(\"Model\")\n\t\t\tcoinsModel.Name = \"Coins\"\n\t\t\tcoinsModel.Parent = tracksModel\n\t\tend\n\n\t\ttracksModel.ChildRemoved:connect(function(child) if child == trackModel then coinModel:Destroy() end end)\n\t\tcoinModel.Parent = tracksModel:FindFirstChild(\"Coins\")\n\tend\nend\n\nwait(1)\ncoin.RotVelocity = Vector3.new(0, 5, 0)\n"
+              }
+            },
+            "FastStartScript.server.lua": {
+              "contents": {
+                "Bytes": "local character = script.Parent\nlocal humanoid = character.Humanoid\nlocal spawnLocation = character.HumanoidRootPart.Position\nlocal player = game.Players:GetPlayerFromCharacter(character)\n\nlocal started = false\n\n--Casts a ray to find the height for the character to hover at even if the path is going up or down\nfunction findHeight(distanceInFront)\n\tlocal torso = character.HumanoidRootPart\n\tlocal ray = Ray.new(\n    Vector3.new(torso.Position.X, torso.Position.Y + 50, torso.Position.Z - distanceInFront), \t-- origin\n    (Vector3.new(0, -1, 0)).unit * 300)\t \t\t\t\t\t\t\t\t\t\t\t\t\t\t-- direction\n\tlocal ignore = character\n\tlocal hit, position = game.Workspace:FindPartOnRay(ray, ignore)\n\treturn position.Y + 40\nend\n\nfunction highest(tableOfValues)\n\tlocal highestSoFar = tableOfValues[1]\n\tfor i = 2, #tableOfValues do\n\t\tif tableOfValues[i] > highestSoFar then\n\t\t\thighestSoFar = tableOfValues[i]\n\t\tend\n\tend\n\treturn highestSoFar\nend\n\nfunction fastStart()\n\tif started == false then\n\t\tstarted = true\n\t\tlocal fastStartPosition = Instance.new(\"BodyPosition\")\n\t\tfastStartPosition.Name = \"FastStart\"\n\t\tfastStartPosition.maxForce = Vector3.new(0, 15000, 0)\n\t\tfastStartPosition.Parent = character.HumanoidRootPart\n\t\tlocal fastStartVelocity = Instance.new(\"BodyVelocity\")\n\t\tfastStartVelocity.maxForce = Vector3.new(0, 0, 15000)\n\t\tfastStartVelocity.velocity = Vector3.new(0, 0, -150)\n\t\tfastStartVelocity.Parent = character.HumanoidRootPart\n\t\tfastStartPosition.position = Vector3.new(0, highest({findHeight(0), findHeight(10), findHeight(20), findHeight(30)}), 0)\n\t\twhile character.HumanoidRootPart.Position.Z > spawnLocation.Z - 1000 do\n\t\t\twait(1)\n\t\t\tif character:FindFirstChild(\"HumanoidRootPart\") == nil then\n\t\t\t\tbreak\n\t\t\tend\n\t\t\tfastStartPosition.position = Vector3.new(0, highest({findHeight(0), findHeight(10), findHeight(20), findHeight(30)}), 0)\n\t\tend\n\t\tfastStartVelocity.velocity = Vector3.new(0, 0, 0)\n\t\twait(2)\n\t\tif character:FindFirstChild(\"HumanoidRootPart\") then\n\t\t\tfastStartPosition:Destroy()\n\t\t\tfastStartVelocity:Destroy()\n\t\t\tlocal shield = Instance.new(\"ForceField\")\n\t\t\tshield.Name = \"Shield\"\n\t\t\tshield.Parent = character\n\t\t\tgame:GetService(\"Debris\"):AddItem(shield, 3)\n\t\tend\n\t\tfastStart:Destroy()\n\t\tscript:Destroy()\n\tend\nend\n\nfastStart() --Script starts disabled, only enabled when a player starts running\n\n\n"
+              }
+            },
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "StarterPlayer": {
+      "contents": {
+        "Vfs": {
+          "files": {},
+          "tree": {}
+        }
+      }
+    },
+    "StarterPlayer/StarterPlayerScripts": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "CameraScript.client.lua": {
+              "contents": {
+                "Bytes": "local camera = game.Workspace.CurrentCamera\nlocal player = game.Players.LocalPlayer\n\ncamera.CameraType = Enum.CameraType.Scriptable\n\nlocal targetDistance = 30\nlocal cameraDistance = -30\nlocal cameraDirection = Vector3.new(-1,0,0)\n\nlocal currentTarget = cameraDirection*targetDistance\nlocal currentPosition = cameraDirection*cameraDistance\n\ngame:GetService(\"RunService\").RenderStepped:connect(function()\n\tlocal character = player.Character\n\tif character and character:FindFirstChild(\"Humanoid\") and character:FindFirstChild(\"HumanoidRootPart\") then\n\t\tlocal torso = character.HumanoidRootPart\n\t\tcamera.Focus = torso.CFrame\n\t\tif torso:FindFirstChild(\"FastStart\") == nil then\n\t\t\tcamera.CoordinateFrame = \tCFrame.new(Vector3.new(torso.Position.X, torso.Position.Y + 10, torso.Position.Z - 20) + currentPosition,\n\t\t\t\t\t\t\t\t\t\tVector3.new(torso.Position.X,  torso.Position.Y, torso.Position.Z - 20) + currentTarget)\n\t\telse\n\t\t\t--Lower camera for fast start\n\t\t\tcamera.CoordinateFrame = CFrame.new(Vector3.new(torso.Position.X, torso.Position.Y - 15, torso.Position.Z - 20) + currentPosition,\n\t\t\t\t\t\t\t\t\t\t\t    Vector3.new(torso.Position.X,  torso.Position.Y - 15, torso.Position.Z - 20) + currentTarget)\n\t\tend\n\tend\nend)\n"
+              }
+            },
+            "ControlScript.client.lua": {
+              "contents": {
+                "Bytes": "local player = game.Players.LocalPlayer\nlocal UserInputService = game:GetService(\"UserInputService\")\nlocal ContextActionService = game:GetService(\"ContextActionService\")\n\nlocal doJump = false\nlocal reviving = false\nlocal characterWalkSpeed = 40\n\ngame.StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Chat, false)\ngame.StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Health, false)\ngame.StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false)\n\nplayer:WaitForChild(\"PlayerGui\")\n\nlocal function jump()\n\tif player.Character ~= nil then\n\t\tif player.Character.Humanoid.WalkSpeed == 0 then\n\t\t\t-- Character is not yet moving, start screen was shown\n\t\t\tdoJump = false\n\t\t\tif player.PlayerGui.StartScreen.StartInstructions.Visible == true then\n\t\t\t\tplayer.PlayerGui.StartScreen:Destroy()\n\t\t\t\tplayer.Character.Humanoid.WalkSpeed = characterWalkSpeed\n\t\t\t\tgame.ReplicatedStorage.RemoteEvents.RunStarting:FireServer()\n\t\t\tend\n\t\telse\n\t\t\tplayer.Character.Humanoid.Jump = true\n\t\tend\n\tend\nend\n\n-- Handles behaviours\nlocal function characterTouchedBrick(partTouched)\n\tlocal behaviours = partTouched:FindFirstChild(\"Behaviours\")\n\tif behaviours ~= nil then\n\t\tbehaviours = behaviours:GetChildren()\n\t\tfor i = 1, #behaviours do\n\t\t\tif behaviours[i].Value == true then\n\t\t\t\tgame.ReplicatedStorage.RemoteEvents.ExecuteBehaviour:FireServer(player.Character, partTouched, behaviours[i].Name)\n\t\t\tend\n\t\tend\n\tend\nend\n\nfunction characterAdded(newCharacter)\n\tlocal humanoid = newCharacter:WaitForChild(\"Humanoid\")\n\thumanoid.WalkSpeed = 0\n\thumanoid.Touched:connect(characterTouchedBrick)\n\n\tlocal splashScreen = player.PlayerGui:WaitForChild(\"StartScreen\")\n\n\tif UserInputService.TouchEnabled == false then\n\t\tif UserInputService.GamepadEnabled then\n\t\t\tsplashScreen.StartInstructions.StartLabel.Text = \"Press Space or Gamepad A Button to Start\"\n\t\telse\n\t\t\tsplashScreen.StartInstructions.StartLabel.Text = \"Press Space to Start\"\n\t\tend\n\n\tend\n\tif reviving == true then\n\t\treviving = false\n\t\tsplashScreen:Destroy()\n\t\thumanoid.WalkSpeed = characterWalkSpeed\n\tend\n\n\thumanoid.WalkSpeed = 0\nend\nplayer.CharacterAdded:connect(characterAdded)\n\nif player.Character then\n\tcharacterAdded(player.Character)\nend\n\nfunction checkReviving(addedGui)\n\tif addedGui.Name == \"RevivingGUI\" then\n\t\treviving = true\n\tend\nend\nplayer.PlayerGui.ChildAdded:connect(checkReviving)\n\nif UserInputService.TouchEnabled then\n\tUserInputService.ModalEnabled = true\n\tUserInputService.TouchStarted:connect(function(inputObject, gameProcessedEvent) if gameProcessedEvent == false then doJump = true end end)\n\tUserInputService.TouchEnded:connect(function() doJump = false end)\nelse\n\tContextActionService:BindAction(\"Jump\", function(action, userInputState, inputObject) doJump = (userInputState == Enum.UserInputState.Begin) end, false, Enum.KeyCode.Space, Enum.KeyCode.ButtonA)\nend\n\ngame:GetService(\"RunService\").RenderStepped:connect(function()\n\tif player.Character ~= nil then\n\t\tif player.Character:FindFirstChild(\"Humanoid\") then\n\t\t\tif doJump == true then\n\t\t\t\tjump()\n\t\t\tend\n\t\t\tplayer.Character.Humanoid:Move(Vector3.new(0,0,-1), false)\n\t\tend\n\tend\nend)\n"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
     "Workspace": {
       "contents": {
         "Vfs": {
@@ -36,13 +247,13 @@
         }
       }
     },
-    "Workspace/JumpPad": {
+    "Workspace/Bridge/Parts/Coin": {
       "contents": {
         "Vfs": {
           "files": {
             "init.meta.json": {
               "contents": {
-                "Bytes": "{\n  \"ignoreUnknownInstances\": true\n}"
+                "Bytes": "{\n  \"className\": \"Model\",\n  \"ignoreUnknownInstances\": true\n}"
               }
             }
           },
@@ -50,13 +261,18 @@
         }
       }
     },
-    "Workspace/JumpPad/Parts": {
+    "Workspace/Bridge/Parts/Coin/Coin": {
       "contents": {
         "Vfs": {
           "files": {
+            "GetCoinScript.server.lua": {
+              "contents": {
+                "Bytes": "local newScript = game.ServerStorage.Scripts.CoinScript:Clone()\nnewScript.Parent = script.Parent\nnewScript.Disabled = false\n\nscript:Destroy()\n"
+              }
+            },
             "init.meta.json": {
               "contents": {
-                "Bytes": "{\n  \"ignoreUnknownInstances\": true\n}"
+                "Bytes": "{\n  \"className\": \"Part\",\n  \"properties\": {\n    \"CFrame\": {\n      \"Type\": \"CFrame\",\n      \"Value\": [\n        -45.692368,\n        10.883584,\n        64.03897,\n        0.00064224005,\n        -0.87152123,\n        -0.49035716,\n        -0.99999964,\n        -0.00075650215,\n        0.000035062432,\n        -0.0004015416,\n        0.49035698,\n        -0.8715215\n      ]\n    },\n    \"CanCollide\": {\n      \"Type\": \"Bool\",\n      \"Value\": false\n    },\n    \"CollisionGroupId\": {\n      \"Type\": \"Int32\",\n      \"Value\": 0\n    },\n    \"Color\": {\n      \"Type\": \"Color3uint8\",\n      \"Value\": [\n        99,\n        95,\n        98\n      ]\n    },\n    \"CustomPhysicalProperties\": {\n      \"Type\": \"PhysicalProperties\",\n      \"Value\": null\n    },\n    \"RootPriority\": {\n      \"Type\": \"Int32\",\n      \"Value\": 0\n    },\n    \"RotVelocity\": {\n      \"Type\": \"Vector3\",\n      \"Value\": [\n        0.000007682771,\n        4.992341,\n        0.00002275745\n      ]\n    },\n    \"Size\": {\n      \"Type\": \"Vector3\",\n      \"Value\": [\n        4.0,\n        1.2,\n        4.0\n      ]\n    },\n    \"Velocity\": {\n      \"Type\": \"Vector3\",\n      \"Value\": [\n        3.6479993e-20,\n        -0.0021519673,\n        3.6479993e-20\n      ]\n    }\n  },\n  \"ignoreUnknownInstances\": true\n}"
               }
             }
           },
@@ -125,34 +341,6 @@
         }
       }
     },
-    "Workspace/MineAndSpikes": {
-      "contents": {
-        "Vfs": {
-          "files": {
-            "init.meta.json": {
-              "contents": {
-                "Bytes": "{\n  \"ignoreUnknownInstances\": true\n}"
-              }
-            }
-          },
-          "tree": {}
-        }
-      }
-    },
-    "Workspace/MineAndSpikes/Parts": {
-      "contents": {
-        "Vfs": {
-          "files": {
-            "init.meta.json": {
-              "contents": {
-                "Bytes": "{\n  \"ignoreUnknownInstances\": true\n}"
-              }
-            }
-          },
-          "tree": {}
-        }
-      }
-    },
     "Workspace/Mines": {
       "contents": {
         "Vfs": {
@@ -174,6 +362,39 @@
             "init.meta.json": {
               "contents": {
                 "Bytes": "{\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/Mines/Parts/Coin": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"className\": \"Model\",\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/Mines/Parts/Coin/Coin": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "GetCoinScript.server.lua": {
+              "contents": {
+                "Bytes": "local newScript = game.ServerStorage.Scripts.CoinScript:Clone()\nnewScript.Parent = script.Parent\nnewScript.Disabled = false\n\nscript:Destroy()\n"
+              }
+            },
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"className\": \"Part\",\n  \"properties\": {\n    \"CFrame\": {\n      \"Type\": \"CFrame\",\n      \"Value\": [\n        70.8873,\n        11.883894,\n        -87.56131,\n        -0.00000166893,\n        -0.8714846,\n        -0.49042332,\n        -1.0000002,\n        0.0000016093254,\n        -2.682209e-7,\n        0.0000011175871,\n        0.49042332,\n        -0.87148476\n      ]\n    },\n    \"CanCollide\": {\n      \"Type\": \"Bool\",\n      \"Value\": false\n    },\n    \"CollisionGroupId\": {\n      \"Type\": \"Int32\",\n      \"Value\": 0\n    },\n    \"Color\": {\n      \"Type\": \"Color3uint8\",\n      \"Value\": [\n        99,\n        95,\n        98\n      ]\n    },\n    \"CustomPhysicalProperties\": {\n      \"Type\": \"PhysicalProperties\",\n      \"Value\": null\n    },\n    \"RootPriority\": {\n      \"Type\": \"Int32\",\n      \"Value\": 0\n    },\n    \"RotVelocity\": {\n      \"Type\": \"Vector3\",\n      \"Value\": [\n        5.130978e-7,\n        4.9923415,\n        -1.7840921e-7\n      ]\n    },\n    \"Size\": {\n      \"Type\": \"Vector3\",\n      \"Value\": [\n        4.0,\n        1.2,\n        4.0\n      ]\n    },\n    \"Velocity\": {\n      \"Type\": \"Vector3\",\n      \"Value\": [\n        3.6479993e-20,\n        -0.0021519673,\n        3.6479993e-20\n      ]\n    }\n  },\n  \"ignoreUnknownInstances\": true\n}"
               }
             }
           },
@@ -209,6 +430,39 @@
         }
       }
     },
+    "Workspace/SpikesGoingDown/Parts/Coin": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"className\": \"Model\",\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/SpikesGoingDown/Parts/Coin/Coin": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "GetCoinScript.server.lua": {
+              "contents": {
+                "Bytes": "local newScript = game.ServerStorage.Scripts.CoinScript:Clone()\nnewScript.Parent = script.Parent\nnewScript.Disabled = false\n\nscript:Destroy()\n"
+              }
+            },
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"className\": \"Part\",\n  \"properties\": {\n    \"CFrame\": {\n      \"Type\": \"CFrame\",\n      \"Value\": [\n        -15.66716,\n        22.883364,\n        35.613743,\n        0.0025423765,\n        -0.87163436,\n        -0.49015,\n        -0.99999547,\n        -0.0030024052,\n        0.00015226007,\n        -0.0016043484,\n        0.4901474,\n        -0.87163806\n      ]\n    },\n    \"CanCollide\": {\n      \"Type\": \"Bool\",\n      \"Value\": false\n    },\n    \"CollisionGroupId\": {\n      \"Type\": \"Int32\",\n      \"Value\": 0\n    },\n    \"Color\": {\n      \"Type\": \"Color3uint8\",\n      \"Value\": [\n        99,\n        95,\n        98\n      ]\n    },\n    \"CustomPhysicalProperties\": {\n      \"Type\": \"PhysicalProperties\",\n      \"Value\": null\n    },\n    \"RootPriority\": {\n      \"Type\": \"Int32\",\n      \"Value\": 0\n    },\n    \"RotVelocity\": {\n      \"Type\": \"Vector3\",\n      \"Value\": [\n        0.000028359646,\n        4.9923387,\n        0.00009050174\n      ]\n    },\n    \"Size\": {\n      \"Type\": \"Vector3\",\n      \"Value\": [\n        4.0,\n        1.2,\n        4.0\n      ]\n    },\n    \"Velocity\": {\n      \"Type\": \"Vector3\",\n      \"Value\": [\n        3.6479993e-20,\n        -0.0042958274,\n        3.6479993e-20\n      ]\n    }\n  },\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
     "Workspace/SpikesGoingUp": {
       "contents": {
         "Vfs": {
@@ -230,6 +484,39 @@
             "init.meta.json": {
               "contents": {
                 "Bytes": "{\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/SpikesGoingUp/Parts/Coin": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"className\": \"Model\",\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/SpikesGoingUp/Parts/Coin/Coin": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "GetCoinScript.server.lua": {
+              "contents": {
+                "Bytes": "local newScript = game.ServerStorage.Scripts.CoinScript:Clone()\nnewScript.Parent = script.Parent\nnewScript.Disabled = false\n\nscript:Destroy()\n"
+              }
+            },
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"className\": \"Part\",\n  \"properties\": {\n    \"CFrame\": {\n      \"Type\": \"CFrame\",\n      \"Value\": [\n        22.533936,\n        24.884012,\n        12.12881,\n        0.0008068085,\n        -0.87154335,\n        -0.49031788,\n        -0.9999992,\n        -0.001180172,\n        0.00045216084,\n        -0.0009727329,\n        0.4903171,\n        -0.87154365\n      ]\n    },\n    \"CanCollide\": {\n      \"Type\": \"Bool\",\n      \"Value\": false\n    },\n    \"CollisionGroupId\": {\n      \"Type\": \"Int32\",\n      \"Value\": 0\n    },\n    \"Color\": {\n      \"Type\": \"Color3uint8\",\n      \"Value\": [\n        99,\n        95,\n        98\n      ]\n    },\n    \"CustomPhysicalProperties\": {\n      \"Type\": \"PhysicalProperties\",\n      \"Value\": null\n    },\n    \"RootPriority\": {\n      \"Type\": \"Int32\",\n      \"Value\": 0\n    },\n    \"RotVelocity\": {\n      \"Type\": \"Vector3\",\n      \"Value\": [\n        0.000010292977,\n        4.992338,\n        0.000035712845\n      ]\n    },\n    \"Size\": {\n      \"Type\": \"Vector3\",\n      \"Value\": [\n        4.0,\n        1.2,\n        4.0\n      ]\n    },\n    \"Velocity\": {\n      \"Type\": \"Vector3\",\n      \"Value\": [\n        3.6479993e-20,\n        -0.0042958274,\n        3.6479993e-20\n      ]\n    }\n  },\n  \"ignoreUnknownInstances\": true\n}"
               }
             }
           },
@@ -265,6 +552,39 @@
         }
       }
     },
+    "Workspace/Trapdoor/Parts/Coin": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"className\": \"Model\",\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/Trapdoor/Parts/Coin/Coin": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "GetCoinScript.server.lua": {
+              "contents": {
+                "Bytes": "local newScript = game.ServerStorage.Scripts.CoinScript:Clone()\nnewScript.Parent = script.Parent\nnewScript.Disabled = false\n\nscript:Destroy()\n"
+              }
+            },
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"className\": \"Part\",\n  \"properties\": {\n    \"CFrame\": {\n      \"Type\": \"CFrame\",\n      \"Value\": [\n        4.043236,\n        41.288406,\n        -126.00037,\n        -0.00000166893,\n        -0.8714846,\n        -0.49042332,\n        -1.0000002,\n        0.0000016093254,\n        -2.682209e-7,\n        0.0000011175871,\n        0.49042332,\n        -0.87148476\n      ]\n    },\n    \"CanCollide\": {\n      \"Type\": \"Bool\",\n      \"Value\": false\n    },\n    \"CollisionGroupId\": {\n      \"Type\": \"Int32\",\n      \"Value\": 0\n    },\n    \"Color\": {\n      \"Type\": \"Color3uint8\",\n      \"Value\": [\n        99,\n        95,\n        98\n      ]\n    },\n    \"CustomPhysicalProperties\": {\n      \"Type\": \"PhysicalProperties\",\n      \"Value\": null\n    },\n    \"RootPriority\": {\n      \"Type\": \"Int32\",\n      \"Value\": 0\n    },\n    \"RotVelocity\": {\n      \"Type\": \"Vector3\",\n      \"Value\": [\n        5.130978e-7,\n        4.9923415,\n        -1.7840921e-7\n      ]\n    },\n    \"Size\": {\n      \"Type\": \"Vector3\",\n      \"Value\": [\n        4.0,\n        1.2,\n        4.0\n      ]\n    },\n    \"Velocity\": {\n      \"Type\": \"Vector3\",\n      \"Value\": [\n        3.6479993e-20,\n        -0.008614066,\n        3.6479993e-20\n      ]\n    }\n  },\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
     "Workspace/Zombie": {
       "contents": {
         "Vfs": {
@@ -292,9 +612,425 @@
           "tree": {}
         }
       }
+    },
+    "Workspace/Zombie/Parts/Zombie": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "Script.server.lua": {
+              "contents": {
+                "Bytes": "local zombie = script.Parent\n\nfor _, script in pairs(zombie.ModuleScripts:GetChildren()) do\n\tif not game.ServerStorage:FindFirstChild(script.Name) then\n\t\tscript:Clone().Parent = game.ServerStorage\n\tend\nend\n\nlocal AI = require(game.ServerStorage.ROBLOX_ZombieAI).new(zombie)\nlocal DestroyService = require(game.ServerStorage.ROBLOX_DestroyService)\n\n\nlocal function clearParts(parent)\n\tfor _, part in pairs(parent:GetChildren()) do\n\t\tclearParts(part)\n\tend\n\tlocal delay\n\tif parent:IsA(\"Part\") then\n\t\tdelay = math.random(5,10)\n\telse\n\t\tdelay = 11\n\tend\n\tDestroyService:AddItem(parent, delay)\nend\n\nzombie.Humanoid.Died:connect(function()\n\tAI.Stop()\n\tmath.randomseed(tick())\n\tclearParts(zombie)\n\tscript.Disabled = true\nend)\n\nlocal lastMoan = os.time()\nmath.randomseed(os.time())\nwhile true do\n\tlocal animationTrack = zombie.Humanoid:LoadAnimation(zombie.Animations.Arms)\n\tanimationTrack:Play()\n--\tlocal now = os.time()\n--\tif now - lastMoan > 5 then\n--\t\tif math.random() > .3 then\n--\t\t\tzombie.Moan:Play()\n----\t\t\tprint(\"playing moan\")\n--\t\t\tlastMoan = now\n--\t\tend\n--\tend\n\twait(2)\nend\n\n"
+              }
+            },
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"className\": \"Model\",\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/Zombie/Parts/Zombie/Animate": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.server.lua": {
+              "contents": {
+                "Bytes": "function   waitForChild(parent, childName)\n\tlocal child = parent:findFirstChild(childName)\n\tif child then return child end\n\twhile true do\n\t\tchild = parent.ChildAdded:wait()\n\t\tif child.Name==childName then return child end\n\tend\nend\n\nlocal Figure = script.Parent\nlocal Torso = waitForChild(Figure, \"Torso\")\nlocal RightShoulder = waitForChild(Torso, \"Right Shoulder\")\nlocal LeftShoulder = waitForChild(Torso, \"Left Shoulder\")\nlocal RightHip = waitForChild(Torso, \"Right Hip\")\nlocal LeftHip = waitForChild(Torso, \"Left Hip\")\nlocal Neck = waitForChild(Torso, \"Neck\")\nlocal Humanoid = waitForChild(Figure, \"Humanoid\")\nlocal pose = \"Standing\"\n\nlocal currentAnim = \"\"\nlocal currentAnimTrack = nil\nlocal currentAnimKeyframeHandler = nil\nlocal currentAnimSpeed = 1.0\nlocal animTable = {}\nlocal animNames = {\n\tidle = \t{\n\t\t\t\t{ id = \"http://www.roblox.com/asset/?id=125750544\", weight = 9 },\n\t\t\t\t{ id = \"http://www.roblox.com/asset/?id=125750618\", weight = 1 }\n\t\t\t},\n\twalk = \t{\n\t\t\t\t{ id = \"http://www.roblox.com/asset/?id=125749145\", weight = 10 }\n\t\t\t},\n\trun = \t{\n\t\t\t\t{ id = \"run.xml\", weight = 10 }\n\t\t\t},\n\tjump = \t{\n\t\t\t\t{ id = \"http://www.roblox.com/asset/?id=125750702\", weight = 10 }\n\t\t\t},\n\tfall = \t{\n\t\t\t\t{ id = \"http://www.roblox.com/asset/?id=125750759\", weight = 10 }\n\t\t\t},\n\tclimb = {\n\t\t\t\t{ id = \"http://www.roblox.com/asset/?id=125750800\", weight = 10 }\n\t\t\t},\n\ttoolnone = {\n\t\t\t\t{ id = \"http://www.roblox.com/asset/?id=125750867\", weight = 10 }\n\t\t\t},\n\ttoolslash = {\n\t\t\t\t{ id = \"http://www.roblox.com/asset/?id=129967390\", weight = 10 }\n--\t\t\t\t{ id = \"slash.xml\", weight = 10 }\n\t\t\t},\n\ttoollunge = {\n\t\t\t\t{ id = \"http://www.roblox.com/asset/?id=129967478\", weight = 10 }\n\t\t\t},\n\twave = {\n\t\t\t\t{ id = \"http://www.roblox.com/asset/?id=128777973\", weight = 10 }\n\t\t\t},\n\tpoint = {\n\t\t\t\t{ id = \"http://www.roblox.com/asset/?id=128853357\", weight = 10 }\n\t\t\t},\n\tdance = {\n\t\t\t\t{ id = \"http://www.roblox.com/asset/?id=130018893\", weight = 10 },\n\t\t\t\t{ id = \"http://www.roblox.com/asset/?id=132546839\", weight = 10 },\n\t\t\t\t{ id = \"http://www.roblox.com/asset/?id=132546884\", weight = 10 }\n\t\t\t},\n\tdance2 = {\n\t\t\t\t{ id = \"http://www.roblox.com/asset/?id=160934142\", weight = 10 },\n\t\t\t\t{ id = \"http://www.roblox.com/asset/?id=160934298\", weight = 10 },\n\t\t\t\t{ id = \"http://www.roblox.com/asset/?id=160934376\", weight = 10 }\n\t\t\t},\n\tdance3 = {\n\t\t\t\t{ id = \"http://www.roblox.com/asset/?id=160934458\", weight = 10 },\n\t\t\t\t{ id = \"http://www.roblox.com/asset/?id=160934530\", weight = 10 },\n\t\t\t\t{ id = \"http://www.roblox.com/asset/?id=160934593\", weight = 10 }\n\t\t\t},\n\tlaugh = {\n\t\t\t\t{ id = \"http://www.roblox.com/asset/?id=129423131\", weight = 10 }\n\t\t\t},\n\tcheer = {\n\t\t\t\t{ id = \"http://www.roblox.com/asset/?id=129423030\", weight = 10 }\n\t\t\t},\n}\n\n-- Existance in this list signifies that it is an emote, the value indicates if it is a looping emote\nlocal emoteNames = { wave = false, point = false, dance = true, dance2 = true, dance3 = true, laugh = false, cheer = false}\n\nmath.randomseed(tick())\n\nfunction configureAnimationSet(name, fileList)\n\tif (animTable[name] ~= nil) then\n\t\tfor _, connection in pairs(animTable[name].connections) do\n\t\t\tconnection:disconnect()\n\t\tend\n\tend\n\tanimTable[name] = {}\n\tanimTable[name].count = 0\n\tanimTable[name].totalWeight = 0\n\tanimTable[name].connections = {}\n\n\t-- check for config values\n\tlocal config = script:FindFirstChild(name)\n\tif (config ~= nil) then\n--\t\tprint(\"Loading anims \" .. name)\n\t\ttable.insert(animTable[name].connections, config.ChildAdded:connect(function(child) configureAnimationSet(name, fileList) end))\n\t\ttable.insert(animTable[name].connections, config.ChildRemoved:connect(function(child) configureAnimationSet(name, fileList) end))\n\t\tlocal idx = 1\n\t\tfor _, childPart in pairs(config:GetChildren()) do\n\t\t\tif (childPart:IsA(\"Animation\")) then\n\t\t\t\ttable.insert(animTable[name].connections, childPart.Changed:connect(function(property) configureAnimationSet(name, fileList) end))\n\t\t\t\tanimTable[name][idx] = {}\n\t\t\t\tanimTable[name][idx].anim = childPart\n\t\t\t\tlocal weightObject = childPart:FindFirstChild(\"Weight\")\n\t\t\t\tif (weightObject == nil) then\n\t\t\t\t\tanimTable[name][idx].weight = 1\n\t\t\t\telse\n\t\t\t\t\tanimTable[name][idx].weight = weightObject.Value\n\t\t\t\tend\n\t\t\t\tanimTable[name].count = animTable[name].count + 1\n\t\t\t\tanimTable[name].totalWeight = animTable[name].totalWeight + animTable[name][idx].weight\n\t--\t\t\tprint(name .. \" [\" .. idx .. \"] \" .. animTable[name][idx].anim.AnimationId .. \" (\" .. animTable[name][idx].weight .. \")\")\n\t\t\t\tidx = idx + 1\n\t\t\tend\n\t\tend\n\tend\n\n\t-- fallback to defaults\n\tif (animTable[name].count <= 0) then\n\t\tfor idx, anim in pairs(fileList) do\n\t\t\tanimTable[name][idx] = {}\n\t\t\tanimTable[name][idx].anim = Instance.new(\"Animation\")\n\t\t\tanimTable[name][idx].anim.Name = name\n\t\t\tanimTable[name][idx].anim.AnimationId = anim.id\n\t\t\tanimTable[name][idx].weight = anim.weight\n\t\t\tanimTable[name].count = animTable[name].count + 1\n\t\t\tanimTable[name].totalWeight = animTable[name].totalWeight + anim.weight\n--\t\t\tprint(name .. \" [\" .. idx .. \"] \" .. anim.id .. \" (\" .. anim.weight .. \")\")\n\t\tend\n\tend\nend\n\n-- Setup animation objects\nfunction scriptChildModified(child)\n\tlocal fileList = animNames[child.Name]\n\tif (fileList ~= nil) then\n\t\tconfigureAnimationSet(child.Name, fileList)\n\tend\nend\n\nscript.ChildAdded:connect(scriptChildModified)\nscript.ChildRemoved:connect(scriptChildModified)\n\n\nfor name, fileList in pairs(animNames) do\n\tconfigureAnimationSet(name, fileList)\nend\n\n-- ANIMATION\n\n-- declarations\nlocal toolAnim = \"None\"\nlocal toolAnimTime = 0\n\nlocal jumpAnimTime = 0\nlocal jumpAnimDuration = 0.3\n\nlocal toolTransitionTime = 0.1\nlocal fallTransitionTime = 0.3\nlocal jumpMaxLimbVelocity = 0.75\n\n-- functions\n\nfunction stopAllAnimations()\n\tlocal oldAnim = currentAnim\n\n\t-- return to idle if finishing an emote\n\tif (emoteNames[oldAnim] ~= nil and emoteNames[oldAnim] == false) then\n\t\toldAnim = \"idle\"\n\tend\n\n\tcurrentAnim = \"\"\n\tif (currentAnimKeyframeHandler ~= nil) then\n\t\tcurrentAnimKeyframeHandler:disconnect()\n\tend\n\n\tif (currentAnimTrack ~= nil) then\n\t\tcurrentAnimTrack:Stop()\n\t\tcurrentAnimTrack:Destroy()\n\t\tcurrentAnimTrack = nil\n\tend\n\treturn oldAnim\nend\n\nfunction setAnimationSpeed(speed)\n\tif speed ~= currentAnimSpeed then\n\t\tcurrentAnimSpeed = speed\n\t\tcurrentAnimTrack:AdjustSpeed(currentAnimSpeed)\n\tend\nend\n\nfunction keyFrameReachedFunc(frameName)\n\tif (frameName == \"End\") then\n--\t\tprint(\"Keyframe : \".. frameName)\n\t\tlocal repeatAnim = stopAllAnimations()\n\t\tlocal animSpeed = currentAnimSpeed\n\t\tplayAnimation(repeatAnim, 0.0, Humanoid)\n\t\tsetAnimationSpeed(animSpeed)\n\tend\nend\n\n-- Preload animations\nfunction playAnimation(animName, transitionTime, humanoid)\n\tlocal idleFromEmote = (animName == \"idle\" and emoteNames[currentAnim] ~= nil)\n\tif (animName ~= currentAnim and not idleFromEmote) then\n\n\t\tif (currentAnimTrack ~= nil) then\n\t\t\tcurrentAnimTrack:Stop(transitionTime)\n\t\t\tcurrentAnimTrack:Destroy()\n\t\tend\n\n\t\tcurrentAnimSpeed = 1.0\n\t\tlocal roll = math.random(1, animTable[animName].totalWeight)\n\t\tlocal origRoll = roll\n\t\tlocal idx = 1\n\t\twhile (roll > animTable[animName][idx].weight) do\n\t\t\troll = roll - animTable[animName][idx].weight\n\t\t\tidx = idx + 1\n\t\tend\n--\t\tprint(animName .. \" \" .. idx .. \" [\" .. origRoll .. \"]\")\n\t\tlocal anim = animTable[animName][idx].anim\n\n\t\t-- load it to the humanoid; get AnimationTrack\n\t\tcurrentAnimTrack = humanoid:LoadAnimation(anim)\n\n\t\t-- play the animation\n\t\tcurrentAnimTrack:Play(transitionTime)\n\t\tcurrentAnim = animName\n\n\t\t-- set up keyframe name triggers\n\t\tif (currentAnimKeyframeHandler ~= nil) then\n\t\t\tcurrentAnimKeyframeHandler:disconnect()\n\t\tend\n\t\tcurrentAnimKeyframeHandler = currentAnimTrack.KeyframeReached:connect(keyFrameReachedFunc)\n\tend\nend\n\n-------------------------------------------------------------------------------------------\n-------------------------------------------------------------------------------------------\n\nlocal toolAnimName = \"\"\nlocal toolAnimTrack = nil\nlocal currentToolAnimKeyframeHandler = nil\n\nfunction toolKeyFrameReachedFunc(frameName)\n\tif (frameName == \"End\") then\n--\t\tprint(\"Keyframe : \".. frameName)\n\t\tlocal repeatAnim = stopToolAnimations()\n\t\tplayToolAnimation(repeatAnim, 0.0, Humanoid)\n\tend\nend\n\n\nfunction playToolAnimation(animName, transitionTime, humanoid)\n\tif (animName ~= toolAnimName) then\n\n\t\tif (toolAnimTrack ~= nil) then\n\t\t\ttoolAnimTrack:Stop()\n\t\t\ttoolAnimTrack:Destroy()\n\t\t\ttransitionTime = 0\n\t\tend\n\n\t\tlocal roll = math.random(1, animTable[animName].totalWeight)\n\t\tlocal origRoll = roll\n\t\tlocal idx = 1\n\t\twhile (roll > animTable[animName][idx].weight) do\n\t\t\troll = roll - animTable[animName][idx].weight\n\t\t\tidx = idx + 1\n\t\tend\n--\t\tprint(animName .. \" * \" .. idx .. \" [\" .. origRoll .. \"]\")\n\t\tlocal anim = animTable[animName][idx].anim\n\n\t\t-- load it to the humanoid; get AnimationTrack\n\t\ttoolAnimTrack = humanoid:LoadAnimation(anim)\n\n\t\t-- play the animation\n\t\ttoolAnimTrack:Play(transitionTime)\n\t\ttoolAnimName = animName\n\n\t\tcurrentToolAnimKeyframeHandler = toolAnimTrack.KeyframeReached:connect(toolKeyFrameReachedFunc)\n\tend\nend\n\nfunction stopToolAnimations()\n\tlocal oldAnim = toolAnimName\n\n\tif (currentToolAnimKeyframeHandler ~= nil) then\n\t\tcurrentToolAnimKeyframeHandler:disconnect()\n\tend\n\n\ttoolAnimName = \"\"\n\tif (toolAnimTrack ~= nil) then\n\t\ttoolAnimTrack:Stop()\n\t\ttoolAnimTrack:Destroy()\n\t\ttoolAnimTrack = nil\n\tend\n\n\n\treturn oldAnim\nend\n\n-------------------------------------------------------------------------------------------\n-------------------------------------------------------------------------------------------\n\n\nfunction onRunning(speed)\n\tif speed>0.01 then\n\t\tplayAnimation(\"walk\", 0.1, Humanoid)\n\t\tpose = \"Running\"\n\telse\n\t\tplayAnimation(\"idle\", 0.1, Humanoid)\n\t\tpose = \"Standing\"\n\tend\nend\n\nfunction onDied()\n\tpose = \"Dead\"\nend\n\nfunction onJumping()\n\tplayAnimation(\"jump\", 0.1, Humanoid)\n\tjumpAnimTime = jumpAnimDuration\n\tpose = \"Jumping\"\nend\n\nfunction onClimbing(speed)\n\tplayAnimation(\"climb\", 0.1, Humanoid)\n\tsetAnimationSpeed(speed / 12.0)\n\tpose = \"Climbing\"\nend\n\nfunction onGettingUp()\n\tpose = \"GettingUp\"\nend\n\nfunction onFreeFall()\n\tif (jumpAnimTime <= 0) then\n\t\tplayAnimation(\"fall\", fallTransitionTime, Humanoid)\n\tend\n\tpose = \"FreeFall\"\nend\n\nfunction onFallingDown()\n\tpose = \"FallingDown\"\nend\n\nfunction onSeated()\n\tpose = \"Seated\"\nend\n\nfunction onPlatformStanding()\n\tpose = \"PlatformStanding\"\nend\n\nfunction onSwimming(speed)\n\tif speed>0 then\n\t\tpose = \"Running\"\n\telse\n\t\tpose = \"Standing\"\n\tend\nend\n\nfunction getTool()\n\tfor _, kid in ipairs(Figure:GetChildren()) do\n\t\tif kid.className == \"Tool\" then return kid end\n\tend\n\treturn nil\nend\n\nfunction getToolAnim(tool)\n\tfor _, c in ipairs(tool:GetChildren()) do\n\t\tif c.Name == \"toolanim\" and c.className == \"StringValue\" then\n\t\t\treturn c\n\t\tend\n\tend\n\treturn nil\nend\n\nfunction animateTool()\n\n\tif (toolAnim == \"None\") then\n\t\tplayToolAnimation(\"toolnone\", toolTransitionTime, Humanoid)\n\t\treturn\n\tend\n\n\tif (toolAnim == \"Slash\") then\n\t\tplayToolAnimation(\"toolslash\", 0, Humanoid)\n\t\treturn\n\tend\n\n\tif (toolAnim == \"Lunge\") then\n\t\tplayToolAnimation(\"toollunge\", 0, Humanoid)\n\t\treturn\n\tend\nend\n\nfunction moveSit()\n\tRightShoulder.MaxVelocity = 0.15\n\tLeftShoulder.MaxVelocity = 0.15\n\tRightShoulder:SetDesiredAngle(3.14 /2)\n\tLeftShoulder:SetDesiredAngle(-3.14 /2)\n\tRightHip:SetDesiredAngle(3.14 /2)\n\tLeftHip:SetDesiredAngle(-3.14 /2)\nend\n\nlocal lastTick = 0\n\nfunction move(time)\n\tlocal amplitude = 1\n\tlocal frequency = 1\n  \tlocal deltaTime = time - lastTick\n  \tlastTick = time\n\n\tlocal climbFudge = 0\n\tlocal setAngles = false\n\n  \tif (jumpAnimTime > 0) then\n  \t\tjumpAnimTime = jumpAnimTime - deltaTime\n  \tend\n\n\tif (pose == \"FreeFall\" and jumpAnimTime <= 0) then\n\t\tplayAnimation(\"fall\", fallTransitionTime, Humanoid)\n\telseif (pose == \"Seated\") then\n\t\tstopAllAnimations()\n\t\tmoveSit()\n\t\treturn\n\telseif (pose == \"Running\") then\n\t\tplayAnimation(\"walk\", 0.1, Humanoid)\n\telseif (pose == \"Dead\" or pose == \"GettingUp\" or pose == \"FallingDown\" or pose == \"Seated\" or pose == \"PlatformStanding\") then\n--\t\tprint(\"Wha \" .. pose)\n\t\tamplitude = 0.1\n\t\tfrequency = 1\n\t\tsetAngles = true\n\tend\n\n\tif (setAngles) then\n\t\tlocal desiredAngle = amplitude * math.sin(time * frequency)\n\n\t\tRightShoulder:SetDesiredAngle(desiredAngle + climbFudge)\n\t\tLeftShoulder:SetDesiredAngle(desiredAngle - climbFudge)\n\t\tRightHip:SetDesiredAngle(-desiredAngle)\n\t\tLeftHip:SetDesiredAngle(-desiredAngle)\n\tend\n\n\t-- Tool Animation handling\n\tlocal tool = getTool()\n\tif tool then\n\n\t\tlocal animStringValueObject = getToolAnim(tool)\n\n\t\tif animStringValueObject then\n\t\t\ttoolAnim = animStringValueObject.Value\n\t\t\t-- message recieved, delete StringValue\n\t\t\tanimStringValueObject.Parent = nil\n\t\t\ttoolAnimTime = time + .3\n\t\tend\n\n\t\tif time > toolAnimTime then\n\t\t\ttoolAnimTime = 0\n\t\t\ttoolAnim = \"None\"\n\t\tend\n\n\t\tanimateTool()\n\telse\n\t\tstopToolAnimations()\n\t\ttoolAnim = \"None\"\n\t\ttoolAnimTime = 0\n\tend\nend\n\n-- connect events\nHumanoid.Died:connect(onDied)\nHumanoid.Running:connect(onRunning)\nHumanoid.Jumping:connect(onJumping)\nHumanoid.Climbing:connect(onClimbing)\nHumanoid.GettingUp:connect(onGettingUp)\nHumanoid.FreeFalling:connect(onFreeFall)\nHumanoid.FallingDown:connect(onFallingDown)\nHumanoid.Seated:connect(onSeated)\nHumanoid.PlatformStanding:connect(onPlatformStanding)\nHumanoid.Swimming:connect(onSwimming)\n\n-- main program\n\nlocal runService = game:service(\"RunService\");\n\n-- initialize to idle\nplayAnimation(\"idle\", 0.1, Humanoid)\npose = \"Standing\"\n\nwhile Figure.Parent~=nil do\n\tlocal _, time = wait(0.1)\n\tmove(time)\nend\n\n\n"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/Zombie/Parts/Zombie/Animate/climb": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"className\": \"StringValue\",\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/Zombie/Parts/Zombie/Animate/climb/ClimbAnim": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"className\": \"Animation\",\n  \"properties\": {\n    \"AnimationId\": {\n      \"Type\": \"Content\",\n      \"Value\": \"http://www.roblox.com/asset/?id=125750800\"\n    }\n  },\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/Zombie/Parts/Zombie/Animate/fall": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"className\": \"StringValue\",\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/Zombie/Parts/Zombie/Animate/fall/FallAnim": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"className\": \"Animation\",\n  \"properties\": {\n    \"AnimationId\": {\n      \"Type\": \"Content\",\n      \"Value\": \"http://www.roblox.com/asset/?id=125750759\"\n    }\n  },\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/Zombie/Parts/Zombie/Animate/idle": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"className\": \"StringValue\",\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/Zombie/Parts/Zombie/Animate/idle/Animation1": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"className\": \"Animation\",\n  \"properties\": {\n    \"AnimationId\": {\n      \"Type\": \"Content\",\n      \"Value\": \"http://www.roblox.com/asset/?id=125750544\"\n    }\n  },\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/Zombie/Parts/Zombie/Animate/idle/Animation1/Weight": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"className\": \"NumberValue\",\n  \"properties\": {\n    \"Value\": {\n      \"Type\": \"Float64\",\n      \"Value\": 9.0\n    }\n  },\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/Zombie/Parts/Zombie/Animate/idle/Animation2": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"className\": \"Animation\",\n  \"properties\": {\n    \"AnimationId\": {\n      \"Type\": \"Content\",\n      \"Value\": \"http://www.roblox.com/asset/?id=125750618\"\n    }\n  },\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/Zombie/Parts/Zombie/Animate/idle/Animation2/Weight": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"className\": \"NumberValue\",\n  \"properties\": {\n    \"Value\": {\n      \"Type\": \"Float64\",\n      \"Value\": 1.0\n    }\n  },\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/Zombie/Parts/Zombie/Animate/jump": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"className\": \"StringValue\",\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/Zombie/Parts/Zombie/Animate/jump/JumpAnim": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"className\": \"Animation\",\n  \"properties\": {\n    \"AnimationId\": {\n      \"Type\": \"Content\",\n      \"Value\": \"http://www.roblox.com/asset/?id=125750702\"\n    }\n  },\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/Zombie/Parts/Zombie/Animate/run": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"className\": \"StringValue\",\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/Zombie/Parts/Zombie/Animate/run/RunAnim": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"className\": \"Animation\",\n  \"properties\": {\n    \"AnimationId\": {\n      \"Type\": \"Content\",\n      \"Value\": \"http://www.roblox.com/asset/?id=125749145\"\n    }\n  },\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/Zombie/Parts/Zombie/Animate/toolnone": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"className\": \"StringValue\",\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/Zombie/Parts/Zombie/Animate/toolnone/ToolNoneAnim": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"className\": \"Animation\",\n  \"properties\": {\n    \"AnimationId\": {\n      \"Type\": \"Content\",\n      \"Value\": \"http://www.roblox.com/asset/?id=125750867\"\n    }\n  },\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/Zombie/Parts/Zombie/Animate/walk": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"className\": \"StringValue\",\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/Zombie/Parts/Zombie/Animate/walk/WalkAnim": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"className\": \"Animation\",\n  \"properties\": {\n    \"AnimationId\": {\n      \"Type\": \"Content\",\n      \"Value\": \"http://www.roblox.com/asset/?id=125749145\"\n    }\n  },\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Workspace/Zombie/Parts/Zombie/ModuleScripts": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "ROBLOX_AIUtilities.lua": {
+              "contents": {
+                "Bytes": "local utility = {}\n\nfunction utility:WideRayCast(start, target, offset, ignoreList)\n\tlocal parts = {}\n\n\tlocal ray = Ray.new(start, target - start)\n\tlocal part, point = game.Workspace:FindPartOnRayWithIgnoreList(ray, ignoreList)\n\tif part then table.insert(parts, part) end\n\n\tlocal offsetVector = offset * (target - start):Cross(Vector3.FromNormalId(Enum.NormalId.Top)).unit\n\tlocal ray = Ray.new(start + offsetVector, target - start + offsetVector)\n\tlocal part, point = game.Workspace:FindPartOnRayWithIgnoreList(ray, ignoreList)\n\tif part then table.insert(parts, part) end\n\n\tlocal ray = Ray.new(start - offsetVector, target - start - offsetVector)\n\tlocal part, point = game.Workspace:FindPartOnRayWithIgnoreList(ray, ignoreList)\n\tif part then table.insert(parts, part) end\n\n\treturn parts\nend\n\nfunction utility:FindNearestPathPoint(path, point, start, target, ignoreList)\n\tlocal occludePoint = path:CheckOcclusionAsync(point)\n\tif occludePoint > 0 then\n\t\tutility:WideRayCast(start)\n\tend\nend\n\nlocal maxForce = 75\n\nfunction utility:GetRepulsionVector(unitPosition, otherUnitsPositions)\n\tlocal repulsionVector = Vector3.new(0,0,0)\n\tlocal count = 0\n\tfor _, other in pairs(otherUnitsPositions) do\n\t\tlocal fromOther = unitPosition - other\n\t\t--fromOther = fromOther.unit * ((-maxForce / 5) * math.pow(fromOther.magnitude,2) + maxForce)\n\t\tfromOther = fromOther.unit * 1000 / math.pow((fromOther.magnitude + 1), 2)\n\t\trepulsionVector = repulsionVector + fromOther\n\tend\n\treturn repulsionVector * maxForce\nend\n\nfunction utility:GetIdleState(StateMachine)\n\tlocal IdleState = StateMachine.NewState()\n\tIdleState.Name = \"Idle\"\n\tIdleState.Action = function() end\n\tIdleState.Init = function() end\n\treturn IdleState\nend\n\nfunction utility:GetClosestVisibleTarget(npcModel, characters, ignoreList, fieldOfView)\n\tlocal closestTarget = nil\n\tlocal closestDistance = math.huge\n\tfor _, character in pairs(characters) do\n\t\tlocal toTarget = character.HumanoidRootPart.Position - npcModel.HumanoidRootPart.Position\n\t\tlocal toTargetWedge = toTarget * Vector3.new(1,0,1)\n\t\tlocal angle = math.acos(toTargetWedge:Dot(npcModel.HumanoidRootPart.CFrame.lookVector)/toTargetWedge.magnitude)\n\t\tif math.deg(angle) < fieldOfView then\n\t\t\tlocal targetRay = Ray.new(npcModel.HumanoidRootPart.Position, toTarget)\n\t\t\tlocal part, position = game.Workspace:FindPartOnRayWithIgnoreList(targetRay, ignoreList)\n\t\t\tif part and part.Parent == character then\n\t\t\t\tif toTarget.magnitude < closestDistance then\n\t\t\t\t\tclosestTarget = character\n\t\t\t\t\tclosestDistance = toTarget.magnitude\n\t\t\t\tend\n\t\t\tend\n\t\tend\n\tend\n\treturn closestTarget\nend\n\nlocal function isSpaceEmpty(position)\n\tlocal region = Region3.new(position - Vector3.new(2,2,2), position + Vector3.new(2,2,2))\n\treturn game.Workspace:IsRegion3Empty(region)\nend\n\nfunction utility:FindCloseEmptySpace(model)\n\tlocal targetPos = Vector3.new(0,0,0)\n\tlocal count = 0\n\tmath.randomseed(os.time())\n\trepeat\n\t\tlocal xoff = math.random(5,10)\n\t\tif math.random() > .5 then\n\t\t\txoff = xoff * -1\n\t\tend\n\t\tlocal zoff = math.random(5, 10)\n\t\tif math.random() > .5 then\n\t\t\tzoff = zoff * -1\n\t\tend\n\n\t\ttargetPos = Vector3.new(model.HumanoidRootPart.Position.X + xoff,model.HumanoidRootPart.Position.Y,model.HumanoidRootPart.Position.Z + zoff)\n\t\tif isSpaceEmpty(targetPos) then\n\t\t\treturn targetPos\n\t\telse\n\t\t\ttargetPos = targetPos + Vector3.new(0,4,0)\n\t\tend\n\n\t\tif isSpaceEmpty(targetPos) then\n\t\t\treturn targetPos\n\t\tend\n\t\tcount = count + 1\n\tuntil count > 10\n\treturn nil\nend\n\nreturn utility"
+              }
+            },
+            "ROBLOX_DestroyService.lua": {
+              "contents": {
+                "Bytes": "local destroyService = {}\n\nlocal destroyQueue = {}\n\nfunction destroyService:AddItem(theobject, delay)\n\tlocal now = os.time()\n\tlocal destroyObject = {object = theobject, destroyTime = delay + now}\n\tfor i, storedObject in pairs(destroyQueue) do\n\t\tif destroyQueue[i].destroyTime > destroyObject.destroyTime then\n\t\t\ttable.insert(destroyQueue, i, destroyObject)\n\t\t\treturn true\n\t\tend\n\tend\n\ttable.insert(destroyQueue, destroyObject)\n\treturn true\nend\n\nlocal updateThread = coroutine.create(function()\n\twhile true do\n\t\tlocal now = os.time()\n\t\tfor _, storedObject in pairs(destroyQueue) do\n\t\t\tif now >= storedObject.destroyTime then\n\t\t\t\ttable.remove(destroyQueue, 1)\n\t\t\t\tif storedObject.object then\n\t\t\t\t\tstoredObject.object:Destroy()\n\t\t\t\tend\n\t\t\telseif now >= storedObject.destroyTime - 1 then\n\n\t\t\t\tif storedObject.object and storedObject.object:IsA(\"Part\") then\n\t\t\t\t\tlocal trans = storedObject.object.Transparency + 1/30\n\t\t\t\t\tstoredObject.object.Transparency = trans\n\t\t\t\tend\n\t\t\telse\n\t\t\t\tbreak\n\t\t\tend\n\t\tend\n\t\twait()\n\tend\nend)\n\ncoroutine.resume(updateThread)\n\nreturn destroyService"
+              }
+            },
+            "ROBLOX_HumanoidList.lua": {
+              "contents": {
+                "Bytes": "local humanoidList = {}\nlocal storage = {}\n\nfunction humanoidList:GetCurrent()\n\treturn storage\nend\n\nlocal function findHumanoids(object, list)\n\tif object then\n\t\tif object:IsA(\"Humanoid\") then\n\t\t\ttable.insert(list, object)\n\t\tend\n\n\t\tfor _, child in pairs(object:GetChildren()) do\n\t\t\tlocal childList = findHumanoids(child, list)\n\t\tend\n\tend\nend\n\nlocal updateThread = coroutine.create(function()\n\twhile true do\n\t\tstorage = {}\n\t\tfindHumanoids(game.Workspace, storage)\n\t\twait(3)\n\tend\nend)\n\ncoroutine.resume(updateThread)\n\nreturn humanoidList"
+              }
+            },
+            "ROBLOX_PathfindingLibrary.lua": {
+              "contents": {
+                "Bytes": "local PathfindingUtility = {}\nlocal TargetOffsetMax = 10--5\nlocal JumpThreshold = 1.5 --2.5\nlocal NextPointThreshold = 4\nlocal PathfindingService = game:GetService(\"PathfindingService\")\nPathfindingService.EmptyCutoff = .3\n\nfunction PathfindingUtility.new()\n\tlocal this = {}\n\n\tlocal currentTargetPos = nil\n\tlocal lastTargetPos = Vector3.new(math.huge, math.huge, math.huge)\n\tlocal path = nil\n\tlocal currentPointIndex = 1\n\n\tfunction this:MoveToTarget(character, target)\n\t\tlocal targetOffset = (lastTargetPos - target).magnitude\n--\n--\t\tlocal targetOffsetVector = (lastTargetPos - target)\n--\t\tif targetOffsetVector.magnitude < math.huge then\n--\t\t\ttargetOffsetVector = (lastTargetPos - target) * Vector3.new(1,0,1)\n--\t\tend\n\t\tif targetOffset > TargetOffsetMax then\n\t\t--if targetOffsetVector.magnitude > TargetOffsetMax then\n\t\t\t--print(\"moveto\")\n\t\t\tlocal startPoint = character.HumanoidRootPart.Position\n\t\t\tlocal humanoidState = character.Humanoid:GetState()\n\t\t\tif humanoidState == Enum.HumanoidStateType.Jumping or humanoidState == Enum.HumanoidStateType.Freefall then\n\t\t\t\t--print(\"this\")\n\t\t\t\tlocal ray = Ray.new(character.HumanoidRootPart.Position, Vector3.new(0, -100, 0))\n\t\t\t\tlocal hitPart, hitPoint = game.Workspace:FindPartOnRay(ray, character)\n\t\t\t\tif hitPart then\n\t\t\t\t\tstartPoint = hitPoint\n\t\t\t\tend\n\t\t\tend\n\t\t\t--print(\"making new path\")\n\t\t\tlocal newTarget = target\n\t\t\tlocal ray = Ray.new(target + Vector3.new(0,-3,0), Vector3.new(0, -100, 0))\n\t\t\tlocal hitPart, hitPoint = game.Workspace:FindPartOnRay(ray, character)\n\t\t\tif hitPoint then\n\t\t\t\tif (hitPoint - target).magnitude > 4 then\n\t\t\t\t\tnewTarget = newTarget * Vector3.new(1,0,1) + Vector3.new(0,3,0)\n\t\t\t\tend\n\t\t\tend\n\n\t\t\t--local newTarget = Vector3.new(1,0,1) * target + Vector3.new(0, 2, 0)\n\t\t\tpath = PathfindingService:ComputeSmoothPathAsync(startPoint, newTarget, 500)\n\t\t\tif path.Status ~= Enum.PathStatus.Success then\n\t\t\t\t--print(tostring(path.Status))\n\t\t\tend\n\t\t\t--path = PathfindingService:ComputeRawPathAsync(startPoint, target, 500)\n\n--\t\t\tgame.Workspace.Points:ClearAllChildren()\n--\t\t\tlocal ps = path:GetPointCoordinates()\n--\t\t\tfor _, point in pairs(ps) do\n--\t\t\t\tlocal part = Instance.new(\"Part\", game.Workspace.Points)\n--\t\t\t\tpart.CanCollide = false\n--\t\t\t\tpart.Anchored = true\n--\t\t\t\tpart.FormFactor = Enum.FormFactor.Custom\n--\t\t\t\tpart.Size = Vector3.new(1,1,1)\n--\t\t\t\tpart.Position = point\n--\t\t\tend\n\n\t\t\tcurrentPointIndex = 1\n\t\t\tlastTargetPos = target\n\t\tend\n\n\t\tif path then\n\t\t\tlocal points = path:GetPointCoordinates()\n\t\t\tif currentPointIndex < #points then\n\t\t\t\tlocal currentPoint = points[currentPointIndex]\n\t\t\t\tif character:FindFirstChild(\"HumanoidRootPart\") then\n\t\t\t\t\tlocal distance = (character.HumanoidRootPart.Position - currentPoint).magnitude\n\t\t\t\t\tif distance < NextPointThreshold then\n\t\t\t\t\t\tcurrentPointIndex = currentPointIndex + 1\n\t\t\t\t\tend\n\n\t\t\t\t\tcharacter.Humanoid:MoveTo(points[currentPointIndex])\n\t\t\t\t\tif points[currentPointIndex].Y - character.HumanoidRootPart.Position.Y > JumpThreshold then\n\t\t\t\t\t\tcharacter.Humanoid.Jump = true\n\t\t\t\t\tend\n\t\t\t\tend\n\t\t\telse\n\t\t\t\tif character:FindFirstChild(\"Humanoid\") then\n\t\t\t\t\tcharacter.Humanoid:MoveTo(target)\n\t\t\t\tend\n\t\t\tend\n\t\tend\n\tend\n\n\treturn this\nend\nreturn PathfindingUtility "
+              }
+            },
+            "ROBLOX_StateMachine.lua": {
+              "contents": {
+                "Bytes": "local machine = {}\n\nmachine.new = function()\n\tlocal StateMachine = {}\n\n\tStateMachine.WaitTime = .2\n\tStateMachine.CurrentState = nil\n\tStateMachine.SwitchState = function(newState)\n\t\tif StateMachine.CurrentState then\n\t\t\tStateMachine.CurrentState.Stop()\n\t\tend\n\t\tStateMachine.CurrentState = newState\n\t\tif newState then\n\t\t\tnewState.Start()\n\t\tend\n\tend\n\n\tStateMachine.NewState = function()\n\t\tlocal state = {}\n\t\tstate.Name = \"\"\n\t\tstate.Conditions = {}\n\t\tstate.isRunning = false\n\t\tstate.Action = function() end\n\t\tstate.Run = function()\n\t\t\tstate.isRunning = true\n\t\t\twhile state.isRunning do\n\t\t\t\t--check conditions\n\t\t\t\t--print(\"checking conditions\")\n\t\t\t\tfor _, condition in pairs(state.Conditions) do\n\t\t\t\t\t--print(\"Checking \" .. condition.Name)\n\t\t\t\t\tif condition.Evaluate() then\n\t\t\t\t\t\t--print(condition.Name .. \" is true. Switching states\")\n\t\t\t\t\t\tStateMachine.SwitchState(condition.TransitionState)\n\t\t\t\t\t\treturn\n\t\t\t\t\tend\n\t\t\t\tend\n\n\t\t\t\t--if no conditions satisfied, perform action\n\t\t\t\tstate.Action()\n\t\t\t\twait(StateMachine.WaitTime)\n\t\t\tend\n\t\tend\n\t\tstate.Init = function()\n\n\t\tend\n\t\tstate.Start = function()\n\t\t\t--print(\"Starting \" .. state.Name)\n\t\t\tstate.Init()\n\t\t\tlocal thread = coroutine.create(state.Run)\n\t\t\tcoroutine.resume(thread)\n\t\tend\n\t\tstate.Stop = function()\n\t\t\t--print(\"Stopping \" .. state.Name)\n\t\t\tstate.isRunning = false\n\t\tend\n\t\treturn state\n\tend\n\n\tStateMachine.NewCondition = function()\n\t\tlocal condition = {}\n\t\tcondition.Name = \"\"\n\t\tcondition.Evaluate = function() print(\"replace me\") return false end\n\t\tcondition.TransitionState = {}\n\t\treturn condition\n\tend\n\n\treturn StateMachine\nend\n\nreturn machine"
+              }
+            },
+            "ROBLOX_ZombieAI.lua": {
+              "contents": {
+                "Bytes": "--local PathLib = require(game.ServerStorage.PathfindingLibrary).new()\nlocal HumanoidList = require(game.ServerStorage.ROBLOX_HumanoidList)\nlocal AIUtilities = require(game.ServerStorage.ROBLOX_AIUtilities)\n\nlocal ZombieAI = {}\n\nfunction updateDisplay(display, state)\n\tlocal thread = coroutine.create(function()\n\t\twhile true do\n\t\t\twait()\n\t\t\tif state then\n\t\t\t\tdisplay.Text = state.Name\n\t\t\tend\n\t\tend\n\tend)\n\tcoroutine.resume(thread)\nend\n\nZombieAI.new = function(model)\n\tlocal zombie = {}\n\n\t-- CONFIGURATION VARIABLES\n--\tlocal AttackRange, FieldOfView, AggroRange, ChanceOfBoredom, BoredomDuration,\n--\t\tDamage, DamageCooldown\n\n\tlocal configTable = model.Configurations\n\tlocal configs = {}\n\tlocal function loadConfig(configName, defaultValue)\n\t\tif configTable:FindFirstChild(configName) then\n\t\t\tconfigs[configName] = configTable:FindFirstChild(configName).Value\n\t\telse\n\t\t\tconfigs[configName] = defaultValue\n\t\tend\n\tend\n\n\tloadConfig(\"AttackRange\", 3)\n\tloadConfig(\"FieldOfView\", 180)\n\tloadConfig(\"AggroRange\", 200)\n\tloadConfig(\"ChanceOfBoredom\", .5)\n\tloadConfig(\"BoredomDuration\", 10)\n\tloadConfig(\"Damage\", 10)\n\tloadConfig(\"DamageCooldown\", 1)\n\n\tlocal StateMachine = require(game.ServerStorage.ROBLOX_StateMachine).new()\n\tlocal PathLib = require(game.ServerStorage.ROBLOX_PathfindingLibrary).new()\n\tlocal ZombieTarget = nil\n\tlocal ZombieTargetLastLocation = nil\n\n\tlocal lastBored = os.time()\n\n\t-- STATE DEFINITIONS\n\n\t-- IdleState: NPC stays still. Refreshes bored timer when started to\n\t-- allow for random state change\n\tlocal IdleState = StateMachine.NewState()\n\tIdleState.Name = \"Idle\"\n\tIdleState.Action = function()\n\tend\n\tIdleState.Init = function()\n\t\tlastBored = os.time()\n\tend\n\n\t-- SearchState: NPC wanders randomly increasing chance of spotting\n\t-- enemy. Refreshed bored timer when started to allow for random state\n\t-- change\n\tlocal SearchState = StateMachine.NewState()\n\tSearchState.Name = \"Search\"\n\tlocal lastmoved = os.time()\n\tlocal searchTarget = nil\n\tSearchState.Action = function()\n\t\t-- move to random spot nearby\n\t\tif model then\n\t\t\tif model:FindFirstChild(\"HumanoidRootPart\") then\n\t\t\t\tlocal now = os.time()\n\t\t\t\tif now - lastmoved > 2 then\n\t\t\t\t\tlastmoved = now\n\t\t\t\t\tlocal xoff = math.random(5, 10)\n\t\t\t\t\tif math.random() > .5 then\n\t\t\t\t\t\txoff = xoff * -1\n\t\t\t\t\tend\n\t\t\t\t\tlocal zoff = math.random(5, 10)\n\t\t\t\t\tif math.random() > .5 then\n\t\t\t\t\t\tzoff = zoff * -1\n\t\t\t\t\tend\n\n\t\t\t\t\tlocal testtarg = AIUtilities:FindCloseEmptySpace(model)\n\t\t\t\t\t--if testtarg then print(testtarg) else print(\"could not find\") end\n\t\t\t\t\tsearchTarget = Vector3.new(model.HumanoidRootPart.Position.X + xoff,model.HumanoidRootPart.Position.Y,model.HumanoidRootPart.Position.Z + zoff)\n\t\t\t\t\t--local target = Vector3.new(model.HumanoidRootPart.Position.X + xoff,model.HumanoidRootPart.Position.Y,model.HumanoidRootPart.Position.Z + zoff)\n\t\t\t\t\t--model.Humanoid:MoveTo(target)\n\t\t\t\t\tsearchTarget = testtarg\n\t\t\t\tend\n\t\t\t\t--PathLib:MoveToTarget(model, searchTarget) --Zombie will fall off path when searching\n\t\t\tend\n\t\tend\n\tend\n\tSearchState.Init = function()\n\t\tlastBored = os.time()\n\tend\n\n\t-- PursueState: Enemy has been spotted, need to give chase.\n\tlocal PursueState = StateMachine.NewState()\n\tPursueState.Name = \"Pursue\"\n\tPursueState.Action = function()\n\t\t-- Double check we still have target\n\t\tif ZombieTarget then\n\t\t\tif model:FindFirstChild(\"HumanoidRootPart\") then\n\t\t\t\tif ZombieTarget:FindFirstChild(\"HumanoidRootPart\") then\n\t\t\t\t\t-- Get distance to target\n\t\t\t\t\tlocal distance = (model.HumanoidRootPart.Position - ZombieTarget.HumanoidRootPart.Position).magnitude\n\t\t\t\t\t-- If we're far from target use pathfinding to move. Otherwise just MoveTo\n\t\t\t\t\tif distance > configs[\"AttackRange\"] + 5 then\n\t\t\t\t\t\tPathLib:MoveToTarget(model, ZombieTarget.HumanoidRootPart.Position)\n\t\t\t\t\telse\n\t\t\t\t\t\tmodel.Humanoid:MoveTo(ZombieTarget.HumanoidRootPart.Position)\n\t\t--\t\t\t\tif ZombieTarget.HumanoidRootPart.Position.Y > model.HumanoidRootPart.Position.Y + 2 then\n\t\t--\t\t\t\t\tmodel.Humanoid.Jump = true\n\t\t--\t\t\t\tend\n\t\t\t\t\tend\n\t\t\t\tend\n\t\t\tend\n\t\tend\n\tend\n\tPursueState.Init = function()\n\tend\n\n\t-- AttackState: Keep moving towards target and play attack animation.\n\tlocal AttackState = StateMachine.NewState()\n\tAttackState.Name = \"Attack\"\n\tlocal lastAttack = os.time()\n\tlocal attackTrack = model.Humanoid:LoadAnimation(model.Animations.Attack)\n\tAttackState.Action = function()\n\t\tmodel.Humanoid:MoveTo(ZombieTarget.HumanoidRootPart.Position)\n\t\tlocal now = os.time()\n\t\tif now - lastAttack > 3 then\n\t\t\tlastAttack = now\n\t\t\tattackTrack:Play()\n\t\tend\n\tend\n\n\t-- HuntState: Can't see target but NPC will move to target's last known location.\n\t-- Will eventually get bored and switch state.\n\tlocal HuntState = StateMachine.NewState()\n\tHuntState.Name = \"Hunt\"\n\tHuntState.Action = function()\n\t\tif ZombieTargetLastLocation then\n\t\t\tPathLib:MoveToTarget(model, ZombieTargetLastLocation)\n\t\tend\n\tend\n\tHuntState.Init = function()\n\t\tlastBored = os.time() + configs[\"BoredomDuration\"] / 2\n\tend\n\n\t-- CONDITION DEFINITIONS\n\n\t-- CanSeeTarget: Determines if a target is visible. Returns true if target is visible and\n\t-- sets current target. A target is valid if it is nearby, visible, has a HumanoidRootPart and WalkSpeed\n\t-- greater than 0 (this is to ignore inanimate objects that happen to use humanoids)\n\tlocal CanSeeTarget = StateMachine.NewCondition()\n\tCanSeeTarget.Name = \"CanSeeTarget\"\n\tCanSeeTarget.Evaluate = function()\n\t\tif model then\n\t\t\t-- Get list of all nearby Zombies and non-Zombie humanoids\n\t\t\t-- Zombie list is used to ignore zombies during later raycast\n\t\t\tlocal humanoids = HumanoidList:GetCurrent()\n\t\t\tlocal zombies = {}\n\t\t\tlocal characters = {}\n\t\t\tfor _, object in pairs(humanoids) do\n\t\t\t\tif object and object.Parent and object.Parent:FindFirstChild(\"HumanoidRootPart\") and object.Health > 0 and object.WalkSpeed > 0 then\n\t\t\t\t\tlocal HumanoidRootPart = object.Parent:FindFirstChild(\"HumanoidRootPart\")\n\t\t\t\t\tif HumanoidRootPart and model:FindFirstChild(\"HumanoidRootPart\") then\n\t\t\t\t\t\tlocal distance = (model.HumanoidRootPart.Position - HumanoidRootPart.Position).magnitude\n\t\t\t\t\t\tif distance <= configs[\"AggroRange\"] then\n\t\t\t\t\t\t\tif object.Parent.Name == \"Zombie\" then\n\t\t\t\t\t\t\t\ttable.insert(zombies, object.Parent)\n\t\t\t\t\t\t\telse\n\t\t\t\t\t\t\t\ttable.insert(characters, object.Parent)\n\t\t\t\t\t\t\tend\n\t\t\t\t\t\tend\n\t\t\t\t\tend\n\t\t\t\tend\n\t\t\tend\n\n\t\t\tlocal target = AIUtilities:GetClosestVisibleTarget(model, characters, zombies, configs[\"FieldOfView\"])\n\t\t\tif target then\n\t\t\t\tZombieTarget = target\n\t\t\t\treturn true\n\t\t\tend\n\n--\t\t\t-- Go through each valid target to see if within field of view and if there is\n--\t\t\t-- clear line of sight. Field of view treated as wedge in front of character.\n--\t\t\tfor _, character in pairs(characters) do\n--\t\t\t\tlocal toTarget = (character.HumanoidRootPart.Position - model.HumanoidRootPart.Position)\n--\t\t\t\ttoTarget = Vector3.new(toTarget.X, 0, toTarget.Z)\n--\t\t\t\tlocal angle = math.acos(toTarget:Dot(model.HumanoidRootPart.CFrame.lookVector)/toTarget.magnitude)\n--\t\t\t\tif math.deg(angle) < configs[\"FieldOfView\"]/2 then\n--\t\t\t\t\tZombieTarget = character\n--\t\t\t\t\t-- raycast to see if target is actually visible\n--\t\t\t\t\tlocal toTarget = Ray.new(model.HumanoidRootPart.Position, (ZombieTarget.HumanoidRootPart.Position - model.HumanoidRootPart.Position))\n--\t\t\t\t\tlocal part, position = game.Workspace:FindPartOnRayWithIgnoreList(toTarget, zombies)\n--\t\t\t\t\tif part and part.Parent == ZombieTarget then\n--\t\t\t\t\t\treturn true\n--\t\t\t\t\tend\n--\t\t\t\t\tZombieTarget = nil\n--\t\t\t\tend\n--\t\t\tend\n\t\tend\n\t\treturn false\n\tend\n\tCanSeeTarget.TransitionState = PursueState\n\n\t-- TargetDead: Check if target is dead.\n\tlocal TargetDead = StateMachine.NewCondition()\n\tTargetDead.Name = \"TargetDead\"\n\tTargetDead.Evaluate = function()\n\t\tif ZombieTarget and ZombieTarget.Humanoid then\n\t\t\treturn ZombieTarget.Humanoid.Health <= 0\n\t\tend\n\t\treturn true\n\tend\n\tTargetDead.TransitionState = IdleState\n\n\t-- GotDamaged: Check if NPC has taken damage\n\tlocal lastHealth = model.Humanoid.Health\n\tlocal GotDamaged = StateMachine.NewCondition()\n\tGotDamaged.Name = \"GotDamaged\"\n\tGotDamaged.Evaluate = function()\n\t\tif model then\n\t\t\tif lastHealth > model.Humanoid.Health then\n\t\t\t\treturn true\n\t\t\tend\n\t\tend\n\t\treturn false\n\tend\n\tGotDamaged.TransitionState = SearchState\n\n\t-- GotBored: Used to provide random state change.\n\tlocal GotBored = StateMachine.NewCondition()\n\tGotBored.Name = \"GotBored\"\n\tGotBored.Evaluate = function()\n\t\tlocal now = os.time()\n\t\tif now - lastBored > configs[\"BoredomDuration\"] then\n\t\t\tlocal roll = math.random()\n\t\t\tif roll < configs[\"ChanceOfBoredom\"] then\n\t\t\t\tlastBored = now\n\t\t\t\tif GotBored.TransitionState == SearchState then\n\t\t\t\t\tGotBored.TransitionState = IdleState\n\t\t\t\telse\n\t\t\t\t\tGotBored.TransitionState = SearchState\n\t\t\t\tend\n\t\t\t\treturn true\n\t\t\tend\n\t\tend\n\t\treturn false\n\tend\n\tGotBored.TransitionState = IdleState\n\n\t-- LostTarget: Checks clear line of sight\n\tlocal LostTarget = StateMachine.NewCondition()\n\tLostTarget.Name = \"LostTarget\"\n\tLostTarget.Evaluate = function()\n\t\tif true then return false end\n\t\tif ZombieTarget then\n\t\t\tif (ZombieTarget.HumanoidRootPart.Position - model.HumanoidRootPart.Position).magnitude > 10 then\n\t\t\t\tlocal toTarget = Ray.new(model.HumanoidRootPart.Position, (ZombieTarget.HumanoidRootPart.Position - model.HumanoidRootPart.Position))\n\t\t\t\tlocal part, position = game.Workspace:FindPartOnRay(toTarget, model)\n\t\t\t\tif not part or part.Parent ~= ZombieTarget  then\n\t\t\t\t\t--print(\"Lost target!\")\n\t\t\t\t\tZombieTargetLastLocation = ZombieTarget.HumanoidRootPart.Position\n\t\t\t\t\tZombieTarget = nil\n\t\t\t\t\treturn true\n\t\t\t\tend\n\t\t\tend\n\t\tend\n\t\treturn false\n\tend\n\tLostTarget.TransitionState = HuntState\n\n\tlocal WithinRange = StateMachine.NewCondition()\n\tWithinRange.Name = \"WithinRange\"\n\tWithinRange.Evaluate = function()\n\t\tif ZombieTarget then\n\t\t\tif model:FindFirstChild(\"HumanoidRootPart\") then\n\t\t\t\tlocal distance = (model.HumanoidRootPart.Position - ZombieTarget.HumanoidRootPart.Position).magnitude\n\t\t\t\tif distance < configs[\"AttackRange\"] then\n\t\t\t\t\t--print(\"Within attack range!\")\n\t\t\t\t\treturn true\n\t\t\t\tend\n\t\t\tend\n\t\tend\n\t\treturn false\n\tend\n\tWithinRange.TransitionState = AttackState\n\n\tlocal OutsideRange = StateMachine.NewCondition()\n\tOutsideRange.Name = \"OutsideRange\"\n\tOutsideRange.Evaluate = function()\n\t\tif ZombieTarget then\n\t\t\tif model:FindFirstChild(\"HumanoidRootPart\") and ZombieTarget:FindFirstChild(\"HumanoidRootPart\") then\n\t\t\t\tlocal distance = (model.HumanoidRootPart.Position - ZombieTarget.HumanoidRootPart.Position).magnitude\n\t\t\t\tif distance > configs[\"AttackRange\"] then\n\t\t\t\t\t--print(\"Outside attack range!\")\n\t\t\t\t\treturn true\n\t\t\t\tend\n\t\t\tend\n\t\tend\n\t\treturn false\n\tend\n\tOutsideRange.TransitionState = PursueState\n\n\ttable.insert(IdleState.Conditions, CanSeeTarget)\n\ttable.insert(IdleState.Conditions, GotDamaged)\n\ttable.insert(IdleState.Conditions, GotBored)\n\n\ttable.insert(SearchState.Conditions, GotBored)\n\ttable.insert(SearchState.Conditions, CanSeeTarget)\n\n\ttable.insert(PursueState.Conditions, LostTarget)\n\ttable.insert(PursueState.Conditions, WithinRange)\n\ttable.insert(PursueState.Conditions, TargetDead)\n\n\ttable.insert(AttackState.Conditions, OutsideRange)\n\ttable.insert(AttackState.Conditions, TargetDead)\n\n\ttable.insert(HuntState.Conditions, GotBored)\n\ttable.insert(HuntState.Conditions, CanSeeTarget)\n\n\t-- Setup arms damage\n\tlocal canHit = true\n\tlocal lastHit = os.time()\n\tlocal function handleHit(other, zombieArm)\n\t\tif canHit then\n\t\t\tif other and other.Parent and other.Parent.Name ~= \"Zombie\" and other.Parent:FindFirstChild(\"Humanoid\") then\n\t\t\t\tlocal enemy = other.Parent\n\t\t\t\tif enemy.Humanoid.WalkSpeed > 0 then\n\t\t\t\t\tlocal shield = enemy:FindFirstChild(\"Shield\")\n\t\t\t\t\tif shield then\n\t\t\t\t\t\tmodel:BreakJoints()\n\t\t\t\t\tend\n\t\t\t\t\tlocal killBehaviour = require(game.ServerScriptService.Server_Main.Behaviours.Kill)\n\t\t\t\t\tkillBehaviour:ExecuteBehaviour(zombieArm, enemy)\n\t\t\t\tend\n\t\t\tend\n\t\telse\n\t\t\tlocal now = os.time()\n\t\t\tif now - lastHit > configs[\"DamageCooldown\"] then\n\t\t\t\tlastHit = now\n\t\t\t\tcanHit = true\n\t\t\tend\n\t\tend\n\tend\n\tlocal leftHitConnect, rightHitConnect\n\tleftHitConnect = model:FindFirstChild(\"Left Arm\").Touched:connect(function(other) handleHit(other, model:FindFirstChild(\"Left Arm\")) end)\n\trightHitConnect = model:FindFirstChild(\"Right Arm\").Touched:connect(function(other) handleHit(other, model:FindFirstChild(\"Right Arm\")) end)\n\n\t--ZombieAI.Animate(model)\n\t--updateDisplay()\n\t--updateDisplay(model.BillboardGui.TextLabel, StateMachine.CurrentState)\n\tlocal thread = coroutine.create(function()\n\t\twhile true do\n\t\t\twait()\n\t\t\t-- calculate repulsion force\n\t\t\tif model == nil then\n\t\t\t\tbreak\n\t\t\tend\n\n\t\t\tif model:FindFirstChild(\"HumanoidRootPart\") == nil then\n\t\t\t\tbreak\n\t\t\tend\n\n\t\t\tlocal humanoids = HumanoidList:GetCurrent()\n\t\t\tlocal localZombies = {}\n\t\t\tfor _, humanoid in pairs(humanoids) do\n\t\t\t\tif humanoid and humanoid ~= model.Humanoid and humanoid.Parent and humanoid.Parent:FindFirstChild(\"HumanoidRootPart\") then\n\t\t\t\t\tlocal HumanoidRootPart = humanoid.Parent:FindFirstChild(\"HumanoidRootPart\")\n\t\t\t\t\tif HumanoidRootPart ~= nil and model ~= nil then\n\t\t\t\t\t\tif model:FindFirstChild(\"HumanoidRootPart\") then\n\t\t\t\t\t\t\tlocal distance = (model.HumanoidRootPart.Position - HumanoidRootPart.Position).magnitude\n\t\t\t\t\t\t\tif distance <= 2.5 then\n\t\t\t\t\t\t\t\ttable.insert(localZombies, HumanoidRootPart.Position)\n\t\t\t\t\t\t\tend\n\t\t\t\t\t\tend\n\t\t\t\t\tend\n\t\t\t\tend\n\t\t\tend\n\t\t\tlocal repulsionDirection = AIUtilities:GetRepulsionVector(model.HumanoidRootPart.Position, localZombies)\n\t\t\tif repulsionDirection.magnitude > 0 then\n\t\t\t\t--print(\"replusion direction: \" .. tostring(repulsionDirection))\n\t\t\tend\n\t\t\tmodel.HumanoidRootPart.RepulsionForce.force = repulsionDirection\n\n\t\t\tif StateMachine.CurrentState and model.Configurations.Debug.Value then\n\t\t\t\tmodel.BillboardGui.TextLabel.Visible = true\n\t\t\t\tmodel.BillboardGui.TextLabel.Text = StateMachine.CurrentState.Name\n\t\t\tend\n\t\t\tif not model.Configurations.Debug.Value then\n\t\t\t\tmodel.BillboardGui.TextLabel.Visible = false\n\t\t\tend\n\t\tend\n\tend)\n\tcoroutine.resume(thread)\n\n\tStateMachine.SwitchState(IdleState)\n\n\tzombie.Stop = function()\n\t\tStateMachine.SwitchState(nil)\n\tend\n\n\treturn zombie\nend\n\nreturn ZombieAI"
+              }
+            },
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"className\": \"Configuration\",\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
     }
   },
   "tree": {
+    "ServerScriptService": {
+      "$className": "ServerScriptService",
+      "$path": "ServerScriptService",
+      "$properties": {
+        "LoadStringEnabled": {
+          "Type": "Bool",
+          "Value": false
+        }
+      }
+    },
+    "ServerStorage": {
+      "$className": "ServerStorage",
+      "$path": "ServerStorage",
+      "$properties": {}
+    },
+    "StarterPlayer": {
+      "$className": "StarterPlayer",
+      "$path": "StarterPlayer",
+      "$properties": {
+        "GameSettingsAssetIDFace": {
+          "Type": "Int32",
+          "Value": 0
+        },
+        "GameSettingsAssetIDHead": {
+          "Type": "Int32",
+          "Value": 0
+        },
+        "GameSettingsAssetIDLeftArm": {
+          "Type": "Int32",
+          "Value": 0
+        },
+        "GameSettingsAssetIDLeftLeg": {
+          "Type": "Int32",
+          "Value": 0
+        },
+        "GameSettingsAssetIDPants": {
+          "Type": "Int32",
+          "Value": 0
+        },
+        "GameSettingsAssetIDRightArm": {
+          "Type": "Int32",
+          "Value": 0
+        },
+        "GameSettingsAssetIDRightLeg": {
+          "Type": "Int32",
+          "Value": 0
+        },
+        "GameSettingsAssetIDShirt": {
+          "Type": "Int32",
+          "Value": 0
+        },
+        "GameSettingsAssetIDTeeShirt": {
+          "Type": "Int32",
+          "Value": 0
+        },
+        "GameSettingsAssetIDTorso": {
+          "Type": "Int32",
+          "Value": 0
+        },
+        "GameSettingsScaleRangeBodyType": {
+          "Type": "NumberRange",
+          "Value": [
+            0.0,
+            1.0
+          ]
+        },
+        "GameSettingsScaleRangeHead": {
+          "Type": "NumberRange",
+          "Value": [
+            0.95,
+            1.0
+          ]
+        },
+        "GameSettingsScaleRangeHeight": {
+          "Type": "NumberRange",
+          "Value": [
+            0.9,
+            1.05
+          ]
+        },
+        "GameSettingsScaleRangeProportion": {
+          "Type": "NumberRange",
+          "Value": [
+            0.0,
+            1.0
+          ]
+        },
+        "GameSettingsScaleRangeWidth": {
+          "Type": "NumberRange",
+          "Value": [
+            0.7,
+            1.0
+          ]
+        }
+      }
+    },
+    "StarterPlayerScripts": {
+      "$className": "StarterPlayerScripts",
+      "$path": "StarterPlayer/StarterPlayerScripts",
+      "$properties": {}
+    },
     "Workspace": {
       "$className": "Workspace",
       "$path": "Workspace",

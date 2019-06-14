@@ -1,0 +1,10 @@
+{
+  "className": "Animation",
+  "properties": {
+    "AnimationId": {
+      "Type": "Content",
+      "Value": "http://www.roblox.com/asset/?id=125750759"
+    }
+  },
+  "ignoreUnknownInstances": true
+}

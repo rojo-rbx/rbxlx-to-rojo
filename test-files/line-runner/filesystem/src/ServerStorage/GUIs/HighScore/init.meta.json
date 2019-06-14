@@ -1,0 +1,10 @@
+{
+  "className": "ScreenGui",
+  "properties": {
+    "DisplayOrder": {
+      "Type": "Int32",
+      "Value": 0
+    }
+  },
+  "ignoreUnknownInstances": true
+}

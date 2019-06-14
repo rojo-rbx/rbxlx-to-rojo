@@ -1,0 +1,10 @@
+{
+  "className": "NumberValue",
+  "properties": {
+    "Value": {
+      "Type": "Float64",
+      "Value": 1.0
+    }
+  },
+  "ignoreUnknownInstances": true
+}

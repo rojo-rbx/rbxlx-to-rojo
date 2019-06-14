@@ -1,47 +1,4 @@
 {
-  "files": {
-    "A": {
-      "contents": {
-        "Vfs": {
-          "files": {
-            "init.meta.json": {
-              "contents": {
-                "Bytes": "{\n  \"ignoreUnknownInstances\": true\n}"
-              }
-            }
-          },
-          "tree": {}
-        }
-      }
-    },
-    "B": {
-      "contents": {
-        "Vfs": {
-          "files": {
-            "init.meta.json": {
-              "contents": {
-                "Bytes": "{\n  \"ignoreUnknownInstances\": true\n}"
-              }
-            }
-          },
-          "tree": {}
-        }
-      }
-    },
-    "C": {
-      "contents": {
-        "Vfs": {
-          "files": {
-            "init.meta.json": {
-              "contents": {
-                "Bytes": "{\n  \"ignoreUnknownInstances\": true\n}"
-              }
-            }
-          },
-          "tree": {}
-        }
-      }
-    }
-  },
+  "files": {},
   "tree": {}
 }

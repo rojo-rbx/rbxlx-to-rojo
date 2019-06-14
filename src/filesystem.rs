@@ -1,5 +1,5 @@
 use crate::structures::*;
-use serde::{Serialize, Serializer, ser::SerializeMap};
+use serde::{ser::SerializeMap, Serialize, Serializer};
 use std::{
     collections::BTreeMap,
     fs::{self, File},
@@ -9,7 +9,10 @@ use std::{
 
 const SRC: &str = "src";
 
-fn serialize_project_tree<S: Serializer>(tree: &BTreeMap<String, TreePartition>, serializer: S) -> Result<S::Ok, S::Error> {
+fn serialize_project_tree<S: Serializer>(
+    tree: &BTreeMap<String, TreePartition>,
+    serializer: S,
+) -> Result<S::Ok, S::Error> {
     let mut map = serializer.serialize_map(Some(tree.len() + 1))?;
     map.serialize_entry("$className", "DataModel")?;
     for (k, v) in tree {
@@ -57,7 +60,10 @@ impl FileSystem {
 impl InstructionReader for FileSystem {
     fn read_instruction<'a>(&mut self, instruction: Instruction<'a>) {
         match instruction {
-            Instruction::AddToTree { name, mut partition } => {
+            Instruction::AddToTree {
+                name,
+                mut partition,
+            } => {
                 assert!(
                     self.project.tree.get(&name).is_none(),
                     "Duplicate item added to tree! Instances can't have the same name: {}",

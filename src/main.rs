@@ -116,9 +116,8 @@ fn repr_instance<'a>(
 
         other_class => {
             // When all else fails, we can make a meta folder if there's scripts in it
-            match has_scripts.get(&child.get_id()) {
-                Some(true) => {}
-                _ => return Err(Error::ShouldntBeRepresented),
+            if has_scripts.get(&child.get_id()) != Some(&true) {
+                return Err(Error::ShouldntBeRepresented);
             }
 
             // let mut tree = RbxTree::new(RbxInstanceProperties {

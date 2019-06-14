@@ -942,94 +942,20 @@
     },
     "ServerStorage": {
       "$className": "ServerStorage",
-      "$path": "ServerStorage",
-      "$properties": {}
+      "$path": "ServerStorage"
     },
     "StarterPlayer": {
       "$className": "StarterPlayer",
-      "$path": "StarterPlayer",
-      "$properties": {
-        "GameSettingsAssetIDFace": {
-          "Type": "Int32",
-          "Value": 0
-        },
-        "GameSettingsAssetIDHead": {
-          "Type": "Int32",
-          "Value": 0
-        },
-        "GameSettingsAssetIDLeftArm": {
-          "Type": "Int32",
-          "Value": 0
-        },
-        "GameSettingsAssetIDLeftLeg": {
-          "Type": "Int32",
-          "Value": 0
-        },
-        "GameSettingsAssetIDPants": {
-          "Type": "Int32",
-          "Value": 0
-        },
-        "GameSettingsAssetIDRightArm": {
-          "Type": "Int32",
-          "Value": 0
-        },
-        "GameSettingsAssetIDRightLeg": {
-          "Type": "Int32",
-          "Value": 0
-        },
-        "GameSettingsAssetIDShirt": {
-          "Type": "Int32",
-          "Value": 0
-        },
-        "GameSettingsAssetIDTeeShirt": {
-          "Type": "Int32",
-          "Value": 0
-        },
-        "GameSettingsAssetIDTorso": {
-          "Type": "Int32",
-          "Value": 0
-        },
-        "GameSettingsScaleRangeBodyType": {
-          "Type": "NumberRange",
-          "Value": [
-            0.0,
-            1.0
-          ]
-        },
-        "GameSettingsScaleRangeHead": {
-          "Type": "NumberRange",
-          "Value": [
-            0.95,
-            1.0
-          ]
-        },
-        "GameSettingsScaleRangeHeight": {
-          "Type": "NumberRange",
-          "Value": [
-            0.9,
-            1.05
-          ]
-        },
-        "GameSettingsScaleRangeProportion": {
-          "Type": "NumberRange",
-          "Value": [
-            0.0,
-            1.0
-          ]
-        },
-        "GameSettingsScaleRangeWidth": {
-          "Type": "NumberRange",
-          "Value": [
-            0.7,
-            1.0
-          ]
+      "StarterPlayerScripts": {
+        "$className": "StarterPlayerScripts",
+        "$path": "StarterPlayer/StarterPlayerScripts",
+        "$properties": {
+          "Tags": {
+            "Type": "BinaryString",
+            "Value": []
+          }
         }
       }
-    },
-    "StarterPlayerScripts": {
-      "$className": "StarterPlayerScripts",
-      "$path": "StarterPlayer/StarterPlayerScripts",
-      "$properties": {}
     },
     "Workspace": {
       "$className": "Workspace",

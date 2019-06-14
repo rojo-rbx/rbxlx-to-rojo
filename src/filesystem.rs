@@ -69,7 +69,17 @@ impl InstructionReader for FileSystem {
                     "Duplicate item added to tree! Instances can't have the same name: {}",
                     name
                 );
-                partition.path = PathBuf::from(SRC).join(partition.path);
+
+                if let Some(path) = partition.path {
+                    partition.path = Some(PathBuf::from(SRC).join(path));
+                }
+
+                for mut child in partition.children.values_mut() {
+                    if let Some(path) = &child.path {
+                        child.path = Some(PathBuf::from(SRC).join(path));
+                    }
+                }
+
                 self.project.tree.insert(name, partition);
             }
 

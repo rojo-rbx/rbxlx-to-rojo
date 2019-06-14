@@ -17,6 +17,7 @@ mod structures;
 mod tests;
 
 lazy_static::lazy_static! {
+    static ref NON_TREE_SERVICES: HashSet<&'static str> = include_str!("./non-tree-services.txt").lines().collect();
     static ref RESPECTED_SERVICES: HashSet<&'static str> = include_str!("./respected-services.txt").lines().collect();
 }
 
@@ -168,7 +169,12 @@ fn repr_instance<'a>(
                         }
 
                         let new_base: Cow<'a, Path> = Cow::Owned(base.join(&child.name));
-                        let mut instructions = vec![Instruction::add_to_tree(patch, new_base.to_path_buf())];
+                        let mut instructions = Vec::new();
+
+                        if !NON_TREE_SERVICES.contains(other_class) {
+                            instructions.push(Instruction::add_to_tree(patch, new_base.to_path_buf()));
+                        }
+
                         if !child.get_children_ids().is_empty() {
                             instructions.push(Instruction::CreateFolder {
                                 folder: new_base.clone(),
@@ -243,7 +249,45 @@ impl<'a, I: InstructionReader + ?Sized> TreeIterator<'a, I> {
                 .tree
                 .get_instance(*child_id)
                 .expect("got fake child id?");
-            let (instructions_to_create_base, path) =
+
+            let (instructions_to_create_base, path) = if child.class_name == "StarterPlayer" {
+                // We can't respect StarterPlayer as a service, because then Rojo
+                // tries to delete StarterPlayerScripts and whatnot, which is not valid.
+                let folder_path: Cow<'a, Path> = Cow::Owned(self.path.join(&child.name));
+                let mut instructions = Vec::new();
+
+                if has_scripts.get(child_id) == Some(&true) {
+                    instructions.push(Instruction::CreateFolder {
+                        folder: folder_path.clone(),
+                    });
+
+                    instructions.push(Instruction::AddToTree {
+                        name: child.name.clone(),
+                        partition: TreePartition {
+                            class_name: child.class_name.clone(),
+                            children: child
+                                .get_children_ids()
+                                .iter()
+                                .filter(|id| has_scripts.get(id) == Some(&true))
+                                .map(|child_id| {
+                                    let child = self.tree.get_instance(*child_id).unwrap();
+                                    (
+                                        child.name.clone(),
+                                        Instruction::partition(
+                                            &child,
+                                            folder_path.join(&child.name),
+                                        ),
+                                    )
+                                })
+                                .collect(),
+                            path: None,
+                            properties: BTreeMap::new(),
+                        },
+                    })
+                }
+
+                (instructions, folder_path)
+            } else {
                 match repr_instance(&self.path, child, has_scripts) {
                     Ok((instructions_to_create_base, path)) => (instructions_to_create_base, path),
                     Err(Error::ShouldntBeRepresented) => continue,
@@ -251,9 +295,12 @@ impl<'a, I: InstructionReader + ?Sized> TreeIterator<'a, I> {
                     //     "an error occured when trying to represent an instance - {:?}",
                     //     other
                     // ),
-                };
+                }
+            };
+
             self.instruction_reader
                 .read_instructions(instructions_to_create_base);
+
             TreeIterator {
                 instruction_reader: self.instruction_reader,
                 path: &path,

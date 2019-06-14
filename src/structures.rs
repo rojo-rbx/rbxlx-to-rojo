@@ -9,11 +9,19 @@ use std::{
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
 pub struct TreePartition {
     #[serde(rename = "$className")]
-    class_name: String,
+    pub class_name: String,
+
+    #[serde(flatten)]
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    pub children: BTreeMap<String, TreePartition>,
+
     #[serde(rename = "$path")]
-    pub path: PathBuf,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub path: Option<PathBuf>,
+
     #[serde(rename = "$properties")]
-    properties: BTreeMap<String, RbxValue>,
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    pub properties: BTreeMap<String, RbxValue>,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
@@ -21,9 +29,11 @@ pub struct MetaFile {
     #[serde(rename = "className")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub class_name: Option<String>,
+
     #[serde(rename = "properties")]
     #[serde(skip_serializing_if = "BTreeMap::is_empty")]
     pub properties: BTreeMap<String, RbxValue>,
+
     #[serde(rename = "ignoreUnknownInstances")]
     pub ignore_unknown_instances: bool,
 }
@@ -49,11 +59,16 @@ impl<'a> Instruction<'a> {
     pub fn add_to_tree(instance: RbxInstance, path: PathBuf) -> Self {
         Instruction::AddToTree {
             name: instance.name.clone(),
-            partition: TreePartition {
-                class_name: instance.class_name.clone(),
-                path,
-                properties: instance.properties.clone().into_iter().collect(),
-            },
+            partition: Instruction::partition(&instance, path),
+        }
+    }
+
+    pub fn partition(instance: &RbxInstance, path: PathBuf) -> TreePartition {
+        TreePartition {
+            class_name: instance.class_name.clone(),
+            children: BTreeMap::new(),
+            path: Some(path),
+            properties: instance.properties.clone().into_iter().collect(),
         }
     }
 }

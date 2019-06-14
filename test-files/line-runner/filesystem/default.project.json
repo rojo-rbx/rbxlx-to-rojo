@@ -1,6 +1,7 @@
 {
   "name": "project",
   "tree": {
+    "$className": "DataModel",
     "Workspace": {
       "$className": "Workspace",
       "$path": "src/Workspace",

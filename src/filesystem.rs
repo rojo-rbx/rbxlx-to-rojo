@@ -1,7 +1,7 @@
 use crate::structures::*;
-use serde::Serialize;
+use serde::{Serialize, Serializer, ser::SerializeMap};
 use std::{
-    collections::HashMap,
+    collections::BTreeMap,
     fs::{self, File},
     io::Write,
     path::PathBuf,
@@ -9,17 +9,27 @@ use std::{
 
 const SRC: &str = "src";
 
+fn serialize_project_tree<S: Serializer>(tree: &BTreeMap<String, TreePartition>, serializer: S) -> Result<S::Ok, S::Error> {
+    let mut map = serializer.serialize_map(Some(tree.len() + 1))?;
+    map.serialize_entry("$className", "DataModel")?;
+    for (k, v) in tree {
+        map.serialize_entry(k, v)?;
+    }
+    map.end()
+}
+
 #[derive(Clone, Debug, Serialize)]
 pub struct Project {
     name: String,
-    tree: HashMap<String, TreePartition>,
+    #[serde(serialize_with = "serialize_project_tree")]
+    tree: BTreeMap<String, TreePartition>,
 }
 
 impl Project {
     fn new() -> Self {
         Self {
             name: "project".to_string(),
-            tree: HashMap::new(),
+            tree: BTreeMap::new(),
         }
     }
 }

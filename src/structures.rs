@@ -1,6 +1,19 @@
 use rbx_dom_weak::{RbxInstance, RbxValue};
 use serde::{Deserialize, Serialize};
-use std::{borrow::Cow, collections::HashMap, path::Path};
+use std::{
+    borrow::Cow,
+    collections::{BTreeMap, HashMap},
+    iter::FromIterator,
+    path::{Path, PathBuf},
+};
+
+fn ordered_map<
+    S: serde::Serializer,
+    K: Ord + Serialize,
+    V: Serialize,
+>(map: &HashMap<K, V>, serializer: S) -> Result<S::Ok, S::Error> {
+    BTreeMap::from_iter(map.iter()).serialize(serializer)
+}
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
 pub struct TreePartition {
@@ -9,6 +22,7 @@ pub struct TreePartition {
     #[serde(rename = "$path")]
     path: String,
     #[serde(rename = "$properties")]
+    #[serde(serialize_with = "ordered_map")]
     properties: HashMap<String, RbxValue>,
 }
 

@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::{
     borrow::Cow,
     collections::BTreeMap,
-    path::Path,
+    path::{Path, PathBuf},
 };
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
@@ -11,7 +11,7 @@ pub struct TreePartition {
     #[serde(rename = "$className")]
     class_name: String,
     #[serde(rename = "$path")]
-    path: String,
+    pub path: PathBuf,
     #[serde(rename = "$properties")]
     properties: BTreeMap<String, RbxValue>,
 }
@@ -46,7 +46,7 @@ pub enum Instruction<'a> {
 }
 
 impl<'a> Instruction<'a> {
-    pub fn add_to_tree(instance: RbxInstance, path: String) -> Self {
+    pub fn add_to_tree(instance: RbxInstance, path: PathBuf) -> Self {
         Instruction::AddToTree {
             name: instance.name.clone(),
             partition: TreePartition {

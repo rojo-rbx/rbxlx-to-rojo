@@ -7,6 +7,8 @@ use std::{
     path::PathBuf,
 };
 
+const SRC: &str = "src";
+
 #[derive(Clone, Debug, Serialize)]
 pub struct Project {
     name: String,
@@ -31,7 +33,7 @@ pub struct FileSystem {
 
 impl FileSystem {
     pub fn from_root(root: PathBuf) -> Self {
-        let source = root.join("src");
+        let source = root.join(SRC);
         let project = Project::new();
 
         Self {
@@ -45,12 +47,13 @@ impl FileSystem {
 impl InstructionReader for FileSystem {
     fn read_instruction<'a>(&mut self, instruction: Instruction<'a>) {
         match instruction {
-            Instruction::AddToTree { name, partition } => {
+            Instruction::AddToTree { name, mut partition } => {
                 assert!(
                     self.project.tree.get(&name).is_none(),
                     "Duplicate item added to tree! Instances can't have the same name: {}",
                     name
                 );
+                partition.path = PathBuf::from(SRC).join(partition.path);
                 self.project.tree.insert(name, partition);
             }
 

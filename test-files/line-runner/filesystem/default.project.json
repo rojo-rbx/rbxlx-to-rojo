@@ -3,7 +3,7 @@
   "tree": {
     "Workspace": {
       "$className": "Workspace",
-      "$path": "Workspace",
+      "$path": "src/Workspace",
       "$properties": {
         "AutoJointsMode": {
           "Type": "Enum",

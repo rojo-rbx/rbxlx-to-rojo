@@ -22,7 +22,7 @@ fn serialize_project_tree<S: Serializer>(
 }
 
 #[derive(Clone, Debug, Serialize)]
-pub struct Project {
+struct Project {
     name: String,
     #[serde(serialize_with = "serialize_project_tree")]
     tree: BTreeMap<String, TreePartition>,

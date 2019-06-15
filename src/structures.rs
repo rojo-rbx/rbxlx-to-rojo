@@ -28,7 +28,7 @@ pub struct TreePartition {
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
-pub struct MetaFile {
+pub(crate) struct MetaFile {
     #[serde(rename = "className")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub class_name: Option<String>,

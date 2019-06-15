@@ -19,11 +19,6 @@ lazy_static::lazy_static! {
     static ref RESPECTED_SERVICES: HashSet<&'static str> = include_str!("./respected-services.txt").lines().collect();
 }
 
-#[derive(Debug)]
-enum Error {
-    ShouldntBeRepresented, // Empty services, services not officially respected
-}
-
 struct TreeIterator<'a, I: InstructionReader + ?Sized> {
     instruction_reader: &'a mut I,
     path: &'a Path,
@@ -45,9 +40,9 @@ fn repr_instance<'a>(
     base: &'a Path,
     child: &'a RbxInstance,
     has_scripts: &'a HashMap<RbxId, bool>,
-) -> Result<(Vec<Instruction<'a>>, Cow<'a, Path>), Error> {
+) -> Option<(Vec<Instruction<'a>>, Cow<'a, Path>)> {
     if has_scripts.get(&child.get_id()) != Some(&true) {
-        return Err(Error::ShouldntBeRepresented);
+        return None;
     }
 
     match child.class_name.as_str() {
@@ -55,7 +50,7 @@ fn repr_instance<'a>(
             let folder_path = base.join(&child.name);
             let owned: Cow<'a, Path> = Cow::Owned(folder_path);
             let clone = owned.clone();
-            Ok((
+            Some((
                 vec![
                     Instruction::CreateFolder { folder: clone },
                     Instruction::CreateFile {
@@ -91,7 +86,7 @@ fn repr_instance<'a>(
             .as_bytes();
 
             if child.get_children_ids().is_empty() {
-                Ok((
+                Some((
                     vec![Instruction::CreateFile {
                         filename: Cow::Owned(base.join(format!("{}{}.lua", child.name, extension))),
                         contents: Cow::Borrowed(source),
@@ -100,7 +95,7 @@ fn repr_instance<'a>(
                 ))
             } else {
                 let folder_path: Cow<'a, Path> = Cow::Owned(base.join(&child.name));
-                Ok((
+                Some((
                     vec![
                         Instruction::CreateFolder {
                             folder: folder_path.clone(),
@@ -131,7 +126,7 @@ fn repr_instance<'a>(
                     let treat_as_service = RESPECTED_SERVICES.contains(other_class);
                     // Don't represent services not in respected-services
                     if reflected.is_service() && !treat_as_service {
-                        return Err(Error::ShouldntBeRepresented);
+                        return None;
                     }
 
                     let mut patch = child.clone();
@@ -163,7 +158,7 @@ fn repr_instance<'a>(
                     if treat_as_service {
                         // Don't represent empty services with no property changes
                         if patch.properties.is_empty() && child.get_children_ids().is_empty() {
-                            return Err(Error::ShouldntBeRepresented);
+                            return None;
                         }
 
                         let new_base: Cow<'a, Path> = Cow::Owned(base.join(&child.name));
@@ -179,7 +174,7 @@ fn repr_instance<'a>(
                             });
                         }
 
-                        return Ok((instructions, new_base));
+                        return Some((instructions, new_base));
                     }
 
                     Cow::Owned(patch.properties.drain().collect())
@@ -200,7 +195,7 @@ fn repr_instance<'a>(
                 ignore_unknown_instances: true,
             };
 
-            Ok((
+            Some((
                 vec![
                     Instruction::CreateFolder {
                         folder: folder_path.clone(),
@@ -287,12 +282,8 @@ impl<'a, I: InstructionReader + ?Sized> TreeIterator<'a, I> {
                 (instructions, folder_path)
             } else {
                 match repr_instance(&self.path, child, has_scripts) {
-                    Ok((instructions_to_create_base, path)) => (instructions_to_create_base, path),
-                    Err(Error::ShouldntBeRepresented) => continue,
-                    // Err(other) => panic!(
-                    //     "an error occured when trying to represent an instance - {:?}",
-                    //     other
-                    // ),
+                    Some((instructions_to_create_base, path)) => (instructions_to_create_base, path),
+                    None => continue,
                 }
             };
 

@@ -4,6 +4,14 @@ version = "0.1.0"
 authors = ["Kampfkarren"]
 edition = "2018"
 
+[lib]
+name = "rbxlx_to_rojo"
+path = "src/lib.rs"
+
+[[bin]]
+name = "rbxlx-to-rojo"
+path = "src/cli.rs"
+
 [dependencies]
 env_logger = "0.6"
 lazy_static = "1.3"

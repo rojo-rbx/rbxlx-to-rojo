@@ -3,7 +3,12 @@ use log::info;
 use pretty_assertions::assert_eq;
 use rbx_dom_weak::RbxInstanceProperties;
 use serde::{Deserialize, Serialize};
-use std::{collections::BTreeMap, fs, io::ErrorKind};
+use std::{
+    collections::BTreeMap,
+    fs,
+    io::ErrorKind,
+    time::Instant,
+};
 
 #[derive(Deserialize, Serialize, Debug, PartialEq)]
 enum VirtualFileContents {
@@ -114,10 +119,14 @@ fn run_tests() {
         source_path.push("source.rbxmx");
         let source = fs::read_to_string(&source_path).expect("couldn't read source.rbxmx");
 
+        let time = Instant::now();
         let tree = rbx_xml::from_str_default(&source).expect("couldn't deserialize source.rbxmx");
+        info!("decoding for {:?} took {}ms", path, Instant::now().duration_since(time).as_millis());
 
         let mut vfs = VirtualFileSystem::default();
+        let time = Instant::now();
         process_instructions(&tree, &mut vfs);
+        info!("processing instructions for {:?} took {}ms", path, Instant::now().duration_since(time).as_millis());
 
         let mut expected_path = path.clone();
         expected_path.push("output.json");

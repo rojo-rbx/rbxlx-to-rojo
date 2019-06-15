@@ -1,4 +1,6 @@
 {
   "name": "project",
-  "tree": {}
+  "tree": {
+    "$className": "DataModel"
+  }
 }

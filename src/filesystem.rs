@@ -1,23 +1,38 @@
 use crate::structures::*;
-use serde::Serialize;
+use serde::{ser::SerializeMap, Serialize, Serializer};
 use std::{
-    collections::HashMap,
+    collections::BTreeMap,
     fs::{self, File},
     io::Write,
     path::PathBuf,
 };
 
+const SRC: &str = "src";
+
+fn serialize_project_tree<S: Serializer>(
+    tree: &BTreeMap<String, TreePartition>,
+    serializer: S,
+) -> Result<S::Ok, S::Error> {
+    let mut map = serializer.serialize_map(Some(tree.len() + 1))?;
+    map.serialize_entry("$className", "DataModel")?;
+    for (k, v) in tree {
+        map.serialize_entry(k, v)?;
+    }
+    map.end()
+}
+
 #[derive(Clone, Debug, Serialize)]
 pub struct Project {
     name: String,
-    tree: HashMap<String, TreePartition>,
+    #[serde(serialize_with = "serialize_project_tree")]
+    tree: BTreeMap<String, TreePartition>,
 }
 
 impl Project {
     fn new() -> Self {
         Self {
             name: "project".to_string(),
-            tree: HashMap::new(),
+            tree: BTreeMap::new(),
         }
     }
 }
@@ -31,7 +46,7 @@ pub struct FileSystem {
 
 impl FileSystem {
     pub fn from_root(root: PathBuf) -> Self {
-        let source = root.join("src");
+        let source = root.join(SRC);
         let project = Project::new();
 
         Self {
@@ -45,12 +60,26 @@ impl FileSystem {
 impl InstructionReader for FileSystem {
     fn read_instruction<'a>(&mut self, instruction: Instruction<'a>) {
         match instruction {
-            Instruction::AddToTree { name, partition } => {
+            Instruction::AddToTree {
+                name,
+                mut partition,
+            } => {
                 assert!(
                     self.project.tree.get(&name).is_none(),
                     "Duplicate item added to tree! Instances can't have the same name: {}",
                     name
                 );
+
+                if let Some(path) = partition.path {
+                    partition.path = Some(PathBuf::from(SRC).join(path));
+                }
+
+                for mut child in partition.children.values_mut() {
+                    if let Some(path) = &child.path {
+                        child.path = Some(PathBuf::from(SRC).join(path));
+                    }
+                }
+
                 self.project.tree.insert(name, partition);
             }
 

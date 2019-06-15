@@ -9,7 +9,6 @@ SoundService
 StarterCharacterScripts
 StarterGui
 StarterPack
-StarterPlayer
 StarterPlayerScripts
 Teams
 TestService

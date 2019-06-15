@@ -1,10 +1,8 @@
 use log::{debug, info, warn};
-use rbx_dom_weak::{
-    RbxId, RbxInstance, RbxInstanceProperties, RbxTree, RbxValue, RbxValueConversion, RbxValueType,
-};
+use rbx_dom_weak::{RbxId, RbxInstance, RbxTree, RbxValue, RbxValueConversion, RbxValueType};
 use std::{
     borrow::Cow,
-    collections::{HashMap, HashSet},
+    collections::{BTreeMap, HashMap, HashSet},
     fs,
     path::{Path, PathBuf},
 };
@@ -19,13 +17,13 @@ mod structures;
 mod tests;
 
 lazy_static::lazy_static! {
+    static ref NON_TREE_SERVICES: HashSet<&'static str> = include_str!("./non-tree-services.txt").lines().collect();
     static ref RESPECTED_SERVICES: HashSet<&'static str> = include_str!("./respected-services.txt").lines().collect();
 }
 
 #[derive(Debug)]
 enum Error {
     ShouldntBeRepresented, // Empty services, services not officially respected
-    XmlEncodeError(rbx_xml::EncodeError),
 }
 
 struct TreeIterator<'a, I: InstructionReader + ?Sized> {
@@ -50,12 +48,34 @@ fn repr_instance<'a>(
     child: &'a RbxInstance,
     has_scripts: &'a HashMap<RbxId, bool>,
 ) -> Result<(Vec<Instruction<'a>>, Cow<'a, Path>), Error> {
+    if has_scripts.get(&child.get_id()) != Some(&true) {
+        return Err(Error::ShouldntBeRepresented);
+    }
+
     match child.class_name.as_str() {
         "Folder" => {
             let folder_path = base.join(&child.name);
             let owned: Cow<'a, Path> = Cow::Owned(folder_path);
             let clone = owned.clone();
-            Ok((vec![Instruction::CreateFolder { folder: clone }], owned))
+            Ok((
+                vec![
+                    Instruction::CreateFolder { folder: clone },
+                    Instruction::CreateFile {
+                        filename: Cow::Owned(owned.join("init.meta.json")),
+                        contents: Cow::Owned(
+                            serde_json::to_string_pretty(&MetaFile {
+                                class_name: None,
+                                properties: BTreeMap::new(),
+                                ignore_unknown_instances: true,
+                            })
+                            .unwrap()
+                            .as_bytes()
+                            .into(),
+                        ),
+                    },
+                ],
+                owned,
+            ))
         }
 
         "Script" | "LocalScript" | "ModuleScript" => {
@@ -100,12 +120,13 @@ fn repr_instance<'a>(
         }
 
         other_class => {
-            // When all else fails, we can *probably* make an rbxmx out of it
-            let mut tree = RbxTree::new(RbxInstanceProperties {
-                name: "VirtualInstance".to_string(),
-                class_name: "DataModel".to_string(),
-                properties: HashMap::new(),
-            });
+            // When all else fails, we can make a meta folder if there's scripts in it
+
+            // let mut tree = RbxTree::new(RbxInstanceProperties {
+            //     name: "VirtualInstance".to_string(),
+            //     class_name: "DataModel".to_string(),
+            //     properties: HashMap::new(),
+            // });
 
             let properties = match rbx_reflection::get_class_descriptor(other_class) {
                 Some(reflected) => {
@@ -148,7 +169,12 @@ fn repr_instance<'a>(
                         }
 
                         let new_base: Cow<'a, Path> = Cow::Owned(base.join(&child.name));
-                        let mut instructions = vec![Instruction::add_to_tree(patch, new_base.to_string_lossy().into_owned())];
+                        let mut instructions = Vec::new();
+
+                        if !NON_TREE_SERVICES.contains(other_class) {
+                            instructions.push(Instruction::add_to_tree(patch, new_base.to_path_buf()));
+                        }
+
                         if !child.get_children_ids().is_empty() {
                             instructions.push(Instruction::CreateFolder {
                                 folder: new_base.clone(),
@@ -169,50 +195,49 @@ fn repr_instance<'a>(
             .into_owned();
 
             // If there are scripts, we'll need to make a .meta.json folder
-            if let Some(true) = has_scripts.get(&child.get_id()) {
-                let folder_path: Cow<'a, Path> = Cow::Owned(base.join(&child.name));
-                let meta = MetaFile {
-                    class_name: child.class_name.clone(),
-                    properties,
-                };
-
-                return Ok((
-                    vec![
-                        Instruction::CreateFolder {
-                            folder: folder_path.clone(),
-                        },
-                        Instruction::CreateFile {
-                            filename: Cow::Owned(folder_path.join("init.meta.json")),
-                            contents: Cow::Owned(
-                                serde_json::to_string_pretty(&meta)
-                                    .expect("couldn't serialize meta")
-                                    .as_bytes()
-                                    .into(),
-                            ),
-                        },
-                    ],
-                    folder_path,
-                ));
-            }
-
-            let properties = RbxInstanceProperties {
-                name: child.name.clone(),
-                class_name: other_class.to_string(),
-                properties,
+            let folder_path: Cow<'a, Path> = Cow::Owned(base.join(&child.name));
+            let meta = MetaFile {
+                class_name: Some(child.class_name.clone()),
+                properties: properties.into_iter().collect(),
+                ignore_unknown_instances: true,
             };
 
-            let root_id = tree.get_root_id();
-            let id = tree.insert_instance(properties, root_id);
-
-            let mut buffer = Vec::new();
-            rbx_xml::to_writer_default(&mut buffer, &tree, &[id]).map_err(Error::XmlEncodeError)?;
             Ok((
-                vec![Instruction::CreateFile {
-                    filename: Cow::Owned(base.join(&format!("{}.rbxmx", child.name))),
-                    contents: Cow::Owned(buffer),
-                }],
-                Cow::Borrowed(base),
+                vec![
+                    Instruction::CreateFolder {
+                        folder: folder_path.clone(),
+                    },
+                    Instruction::CreateFile {
+                        filename: Cow::Owned(folder_path.join("init.meta.json")),
+                        contents: Cow::Owned(
+                            serde_json::to_string_pretty(&meta)
+                                .expect("couldn't serialize meta")
+                                .as_bytes()
+                                .into(),
+                        ),
+                    },
+                ],
+                folder_path,
             ))
+
+            // let properties = RbxInstanceProperties {
+            //     name: child.name.clone(),
+            //     class_name: other_class.to_string(),
+            //     properties,
+            // };
+
+            // let root_id = tree.get_root_id();
+            // let id = tree.insert_instance(properties, root_id);
+
+            // let mut buffer = Vec::new();
+            // rbx_xml::to_writer_default(&mut buffer, &tree, &[id]).map_err(Error::XmlEncodeError)?;
+            // Ok((
+            //     vec![Instruction::CreateFile {
+            //         filename: Cow::Owned(base.join(&format!("{}.rbxmx", child.name))),
+            //         contents: Cow::Owned(buffer),
+            //     }],
+            //     Cow::Borrowed(base),
+            // ))
         }
     }
 }
@@ -224,17 +249,58 @@ impl<'a, I: InstructionReader + ?Sized> TreeIterator<'a, I> {
                 .tree
                 .get_instance(*child_id)
                 .expect("got fake child id?");
-            let (instructions_to_create_base, path) =
+
+            let (instructions_to_create_base, path) = if child.class_name == "StarterPlayer" {
+                // We can't respect StarterPlayer as a service, because then Rojo
+                // tries to delete StarterPlayerScripts and whatnot, which is not valid.
+                let folder_path: Cow<'a, Path> = Cow::Owned(self.path.join(&child.name));
+                let mut instructions = Vec::new();
+
+                if has_scripts.get(child_id) == Some(&true) {
+                    instructions.push(Instruction::CreateFolder {
+                        folder: folder_path.clone(),
+                    });
+
+                    instructions.push(Instruction::AddToTree {
+                        name: child.name.clone(),
+                        partition: TreePartition {
+                            class_name: child.class_name.clone(),
+                            children: child
+                                .get_children_ids()
+                                .iter()
+                                .filter(|id| has_scripts.get(id) == Some(&true))
+                                .map(|child_id| {
+                                    let child = self.tree.get_instance(*child_id).unwrap();
+                                    (
+                                        child.name.clone(),
+                                        Instruction::partition(
+                                            &child,
+                                            folder_path.join(&child.name),
+                                        ),
+                                    )
+                                })
+                                .collect(),
+                            ignore_unknown_instances: true,
+                            path: None,
+                        },
+                    })
+                }
+
+                (instructions, folder_path)
+            } else {
                 match repr_instance(&self.path, child, has_scripts) {
                     Ok((instructions_to_create_base, path)) => (instructions_to_create_base, path),
                     Err(Error::ShouldntBeRepresented) => continue,
-                    Err(other) => panic!(
-                        "an error occured when trying to represent an instance - {:?}",
-                        other
-                    ),
-                };
+                    // Err(other) => panic!(
+                    //     "an error occured when trying to represent an instance - {:?}",
+                    //     other
+                    // ),
+                }
+            };
+
             self.instruction_reader
                 .read_instructions(instructions_to_create_base);
+
             TreeIterator {
                 instruction_reader: self.instruction_reader,
                 path: &path,
@@ -263,12 +329,13 @@ fn check_has_scripts(
             let mut children_have_scripts = false;
 
             for child_id in instance.get_children_ids() {
-                children_have_scripts = children_have_scripts
-                    || check_has_scripts(
-                        tree,
-                        tree.get_instance(*child_id).expect("fake child id?"),
-                        has_scripts,
-                    );
+                let result = check_has_scripts(
+                    tree,
+                    tree.get_instance(*child_id).expect("fake child id?"),
+                    has_scripts,
+                );
+
+                children_have_scripts = children_have_scripts || result;
             }
 
             children_have_scripts

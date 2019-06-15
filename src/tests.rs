@@ -3,7 +3,7 @@ use log::info;
 use pretty_assertions::assert_eq;
 use rbx_dom_weak::RbxInstanceProperties;
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, fs, io::ErrorKind};
+use std::{collections::BTreeMap, fs, io::ErrorKind};
 
 #[derive(Deserialize, Serialize, Debug, PartialEq)]
 enum VirtualFileContents {
@@ -19,8 +19,8 @@ struct VirtualFile {
 
 #[derive(Deserialize, Serialize, Debug, Default)]
 struct VirtualFileSystem {
-    files: HashMap<String, VirtualFile>,
-    tree: HashMap<String, TreePartition>,
+    files: BTreeMap<String, VirtualFile>,
+    tree: BTreeMap<String, TreePartition>,
     #[serde(skip)]
     finished: bool,
 }

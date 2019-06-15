@@ -22,5 +22,6 @@
       "Type": "Content",
       "Value": "rbxasset://Textures/Sword128.png"
     }
-  }
+  },
+  "ignoreUnknownInstances": true
 }

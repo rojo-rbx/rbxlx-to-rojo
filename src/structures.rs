@@ -21,7 +21,6 @@ pub struct TreePartition {
     #[serde(rename = "$path")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub path: Option<PathBuf>,
-
     // #[serde(rename = "$properties")]
     // #[serde(skip_serializing_if = "BTreeMap::is_empty")]
     // pub properties: BTreeMap<String, RbxValue>,

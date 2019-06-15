@@ -1,8 +1,5 @@
 use log::info;
-use rbxlx_to_rojo::{
-	filesystem::FileSystem,
-	process_instructions,
-};
+use rbxlx_to_rojo::{filesystem::FileSystem, process_instructions};
 use std::fs;
 
 fn main() {

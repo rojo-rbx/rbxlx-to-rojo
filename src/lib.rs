@@ -1,17 +1,15 @@
-use log::{debug, info, warn};
+use log::{debug, warn};
 use rbx_dom_weak::{RbxId, RbxInstance, RbxTree, RbxValue, RbxValueConversion, RbxValueType};
 use std::{
     borrow::Cow,
     collections::{BTreeMap, HashMap, HashSet},
-    fs,
     path::{Path, PathBuf},
 };
 
-use filesystem::FileSystem;
 use structures::*;
 
-mod filesystem;
-mod structures;
+pub mod filesystem;
+pub mod structures;
 
 #[cfg(test)]
 mod tests;
@@ -362,21 +360,4 @@ pub fn process_instructions(tree: &RbxTree, instruction_reader: &mut Instruction
     .visit_instructions(&root_instance, &has_scripts);
 
     instruction_reader.finish_instructions();
-}
-
-fn main() {
-    env_logger::init();
-
-    info!("rbxlx-to-rojo {}", env!("CARGO_PKG_VERSION"));
-    let rbxlx_path = std::env::args()
-        .nth(1)
-        .expect("invalid arguments - ./rbxlx-to-rojo place.rbxlx");
-    let rbxlx_source = fs::read_to_string(&rbxlx_path).expect("couldn't read rbxlx file");
-    let root = std::env::args().nth(2).unwrap_or_else(|| ".".to_string());
-    let mut filesystem = FileSystem::from_root(root.into());
-    let tree = rbx_xml::from_str_default(&rbxlx_source).expect("couldn't deserialize rbxlx");
-
-    info!("processing");
-    process_instructions(&tree, &mut filesystem);
-    info!("done");
 }

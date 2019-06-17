@@ -342,13 +342,7 @@ fn check_has_scripts(
     has_scripts: &mut HashMap<RbxId, bool>,
 ) -> bool {
     let result = match instance.class_name.as_str() {
-        "Script" | "LocalScript" | "ModuleScript" => {
-            for descendant in tree.descendants(instance.get_id()) {
-                has_scripts.insert(descendant.get_id(), true);
-            }
-
-            true
-        }
+        "Script" | "LocalScript" | "ModuleScript" => true,
 
         _ => {
             let mut children_have_scripts = false;

@@ -1,10 +1,25 @@
 use rbx_dom_weak::{RbxInstance, RbxValue};
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, Serializer};
 use std::{
     borrow::Cow,
     collections::BTreeMap,
     path::{Path, PathBuf},
 };
+
+// Windows issues!
+fn replace_backslashes<S: Serializer>(
+    path: &Option<PathBuf>,
+    serializer: S,
+) -> Result<S::Ok, S::Error> {
+    match path {
+        Some(value) => value
+            .to_string_lossy()
+            .replace("\\", "/")
+            .serialize(serializer),
+
+        None => serializer.serialize_none(),
+    }
+}
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
 pub struct TreePartition {
@@ -20,6 +35,7 @@ pub struct TreePartition {
 
     #[serde(rename = "$path")]
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(serialize_with = "replace_backslashes")]
     pub path: Option<PathBuf>,
     // #[serde(rename = "$properties")]
     // #[serde(skip_serializing_if = "BTreeMap::is_empty")]

@@ -27,11 +27,11 @@
       "Value": 0
     },
     "Color": {
-      "Type": "Color3uint8",
+      "Type": "Color3",
       "Value": [
-        99,
-        95,
-        98
+        0.3882353,
+        0.37254903,
+        0.38431373
       ]
     },
     "CustomPhysicalProperties": {

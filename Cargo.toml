@@ -9,7 +9,7 @@ name = "rbxlx_to_rojo"
 path = "src/lib.rs"
 
 [[bin]]
-name = "cli"
+name = "rbxlx-to-rojo"
 path = "src/cli.rs"
 required-features = ["cli"]
 

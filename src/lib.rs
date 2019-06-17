@@ -122,6 +122,19 @@ fn repr_instance<'a>(
                             ),
                             contents: Cow::Borrowed(source),
                         },
+                        Instruction::CreateFile {
+                            filename: Cow::Owned(folder_path.join("init.meta.json")),
+                            contents: Cow::Owned(
+                                serde_json::to_string_pretty(&MetaFile {
+                                    class_name: None,
+                                    properties: BTreeMap::new(),
+                                    ignore_unknown_instances: true,
+                                })
+                                .expect("couldn't serialize meta")
+                                .as_bytes()
+                                .into(),
+                            ),
+                        },
                     ],
                     folder_path,
                 ))

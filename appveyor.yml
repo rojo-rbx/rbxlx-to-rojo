@@ -17,20 +17,9 @@ environment:
     PROJECT_NAME: rbxlx-to-rojo
     RUST_BACKTRACE: full
   matrix:
-    - TARGET: x86_64-pc-windows-gnu
-      CHANNEL: stable
-      BITS: 64
-      MSYS2: 1
     - TARGET: x86_64-pc-windows-msvc
       CHANNEL: stable
       BITS: 64
-    - TARGET: i686-pc-windows-gnu
-      CHANNEL: stable
-      BITS: 32
-      MSYS2: 1
-    - TARGET: i686-pc-windows-msvc
-      CHANNEL: stable
-      BITS: 32
 
 matrix:
   fast_finish: true
@@ -55,13 +44,7 @@ test_script:
 before_deploy:
   # Generate artifacts for release
   - cargo build --release --bin rbxlx-to-rojo --features cli
-  - mkdir staging
-  - copy target\release\rbxlx-to-rojo.exe staging
-  - ps: copy target\release\build\rbxlx-to-rojo-*\out\_rg.ps1 staging
-  - cd staging
-  # release zipfile will look like 'rbxlx-to-rojo-1.2.3-x86_64-pc-windows-msvc'
-  - 7z a ../%PROJECT_NAME%-%APPVEYOR_REPO_TAG_NAME%-%TARGET%.zip *
-  - appveyor PushArtifact ../%PROJECT_NAME%-%APPVEYOR_REPO_TAG_NAME%-%TARGET%.zip
+  - appveyor PushArtifact target\release\rbxlx-to-rojo.exe
 
 deploy:
   description: 'Automatically deployed release'

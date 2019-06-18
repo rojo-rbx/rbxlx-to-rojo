@@ -47,12 +47,12 @@ impl InstructionReader for VirtualFileSystem {
                     .parent()
                     .expect("no parent?")
                     .to_string_lossy()
-                    .into_owned();
+                    .replace("\\", "/");
                 let filename = filename
                     .file_name()
                     .expect("no filename?")
                     .to_string_lossy()
-                    .into_owned();
+                    .replace("\\", "/");
 
                 let system = if parent == "" {
                     self
@@ -90,7 +90,7 @@ impl InstructionReader for VirtualFileSystem {
             }
 
             Instruction::CreateFolder { folder } => {
-                let name = folder.to_string_lossy().into_owned();
+                let name = folder.to_string_lossy().replace("\\", "/");
                 self.files.insert(
                     name,
                     VirtualFile {

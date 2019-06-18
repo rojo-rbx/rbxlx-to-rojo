@@ -49,7 +49,7 @@ before_deploy:
 deploy:
   description: 'Automatically deployed release'
   # All the zipped artifacts will be deployed
-  artifact: /.*\.zip/
+  artifact: /.*\.exe/
   auth_token:
     secure: IeLPHhC/QZozyx/SYiWH0kjQx871bWW6nLtSY0lVLjP5P2YEdigW5dbcQPSPamDB
   provider: GitHub

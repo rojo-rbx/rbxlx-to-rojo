@@ -1,6 +1,11 @@
-use log::{debug, info};
+use log::info;
 use rbxlx_to_rojo::{filesystem::FileSystem, process_instructions};
-use std::{fmt, fs, io, path::PathBuf};
+use std::{
+    fmt, fs,
+    io::{self, Write},
+    path::PathBuf,
+    sync::{Arc, RwLock},
+};
 
 #[derive(Debug)]
 enum Problem {
@@ -34,7 +39,45 @@ impl fmt::Display for Problem {
     }
 }
 
+struct WrappedLogger {
+    log: env_logger::Logger,
+    log_file: Arc<RwLock<Option<fs::File>>>,
+}
+
+impl log::Log for WrappedLogger {
+    fn enabled(&self, metadata: &log::Metadata) -> bool {
+        self.log.enabled(metadata)
+    }
+
+    fn log(&self, record: &log::Record) {
+        if self.enabled(record.metadata()) {
+            self.log.log(record);
+
+            if let Some(ref mut log_file) = &mut *self.log_file.write().unwrap() {
+                log_file
+                    .write(format!("{}\r\n", record.args()).as_bytes())
+                    .ok();
+            }
+        }
+    }
+
+    fn flush(&self) {}
+}
+
 fn routine() -> Result<(), Problem> {
+    let env_logger = env_logger::Builder::new()
+        .filter_level(log::LevelFilter::Info)
+        .build();
+
+    let log_file = Arc::new(RwLock::new(None));
+    let logger = WrappedLogger {
+        log: env_logger,
+        log_file: Arc::clone(&log_file),
+    };
+
+    log::set_boxed_logger(Box::new(logger)).unwrap();
+    log::set_max_level(log::LevelFilter::Info);
+
     info!("rbxlx-to-rojo {}", env!("CARGO_PKG_VERSION"));
 
     info!("Select a place file.");
@@ -49,10 +92,10 @@ fn routine() -> Result<(), Problem> {
         },
     });
 
-    debug!("Opening rbxlx file");
+    info!("Opening place file");
     let rbxlx_source = fs::File::open(&rbxlx_path)
         .map_err(|error| Problem::IoError("read the place file", error))?;
-    debug!("Read file, decoding");
+    info!("Decoding place file, this is the longest part...");
     let tree = rbx_xml::from_reader_default(&rbxlx_source).map_err(Problem::DecodeError)?;
 
     info!("Select the path to put your Rojo project in.");
@@ -65,22 +108,22 @@ fn routine() -> Result<(), Problem> {
             nfd::Response::Cancel => Err(Problem::NFDCancel)?,
             _ => unreachable!(),
         },
-    })
-    .join(rbxlx_path.file_stem().unwrap());
+    });
 
-    let mut filesystem = FileSystem::from_root(root.into());
+    let mut filesystem = FileSystem::from_root(root.join(rbxlx_path.file_stem().unwrap()).into());
+
+    log_file.write().unwrap().replace(
+        fs::File::create(root.join("rbxlx-to-rojo.log"))
+            .map_err(|error| Problem::IoError("couldn't create log file", error))?,
+    );
 
     info!("Starting processing, please wait a bit...");
     process_instructions(&tree, &mut filesystem);
-    info!("Done!");
+    info!("Done! Check rbxlx-to-rojo.log for a full log.");
     Ok(())
 }
 
 fn main() {
-    env_logger::builder()
-        .filter_level(log::LevelFilter::Info)
-        .init();
-
     if let Err(error) = routine() {
         eprintln!("An error occurred while using rbxlx-to-rojo.");
         eprintln!("{}", error);

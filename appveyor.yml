@@ -53,7 +53,7 @@ test_script:
 
 before_deploy:
   # Generate artifacts for release
-  - cargo build --release --bin cli --features cli
+  - cargo build --release --bin rbxlx-to-rojo --features cli
   - mkdir staging
   - copy target\release\rg.exe staging
   - ps: copy target\release\build\rbxlx-to-rojo-*\out\_rg.ps1 staging

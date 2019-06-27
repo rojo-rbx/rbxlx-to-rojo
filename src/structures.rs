@@ -1,4 +1,4 @@
-use rbx_dom_weak::{RbxInstance, RbxValue};
+use rbx_dom_weak::RbxInstance;
 use serde::{Deserialize, Serialize, Serializer};
 use std::{
     borrow::Cow,

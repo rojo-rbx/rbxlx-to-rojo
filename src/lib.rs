@@ -1,8 +1,8 @@
-use log::{debug, warn};
-use rbx_dom_weak::{RbxId, RbxInstance, RbxTree, RbxValue, RbxValueConversion, RbxValueType};
+use log::debug;
+use rbx_dom_weak::{RbxId, RbxInstance, RbxTree, RbxValue};
 use std::{
     borrow::Cow,
-    collections::{BTreeMap, HashMap, HashSet},
+    collections::{HashMap, HashSet},
     path::{Path, PathBuf},
 };
 
@@ -25,36 +25,9 @@ struct TreeIterator<'a, I: InstructionReader + ?Sized> {
     tree: &'a RbxTree,
 }
 
-fn get_full_name(instance: &RbxInstance, tree: &RbxTree) -> String {
-    let mut next = Some(instance.get_id());
-    let mut ancestry = Vec::new();
-
-    while let Some(current) = next {
-        let instance = tree.get_instance(current).unwrap();
-        ancestry.push(instance.name.clone());
-        next = instance.get_parent_id();
-    }
-
-    ancestry.pop(); // Pop DataModel, it's redundant.
-    ancestry.reverse();
-    ancestry.join(".")
-}
-
-fn is_default_property(key: &str, value: &RbxValue) -> bool {
-    match key {
-        "Tags" => match value {
-            RbxValue::BinaryString { value } => value.is_empty(),
-            _ => false,
-        },
-
-        _ => false,
-    }
-}
-
 fn repr_instance<'a>(
     base: &'a Path,
     child: &'a RbxInstance,
-    tree: &'a RbxTree,
     has_scripts: &'a HashMap<RbxId, bool>,
 ) -> Option<(Vec<Instruction<'a>>, Cow<'a, Path>)> {
     if has_scripts.get(&child.get_id()) != Some(&true) {
@@ -328,7 +301,7 @@ impl<'a, I: InstructionReader + ?Sized> TreeIterator<'a, I> {
 
                 (instructions, folder_path)
             } else {
-                match repr_instance(&self.path, child, &self.tree, has_scripts) {
+                match repr_instance(&self.path, child, has_scripts) {
                     Some((instructions_to_create_base, path)) => {
                         (instructions_to_create_base, path)
                     }

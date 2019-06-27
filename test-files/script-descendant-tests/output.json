@@ -1,0 +1,101 @@
+{
+  "files": {
+    "Folder": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "ScriptWithNoScriptsInside.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            },
+            "ScriptWithNoScriptsInside.server.lua": {
+              "contents": {
+                "Bytes": "print(\"Hello world!\")\n"
+              }
+            },
+            "ScriptWithNothingInside.server.lua": {
+              "contents": {
+                "Bytes": ""
+              }
+            },
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Folder/ScriptWithJustScriptsInside": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "LocalScript.client.lua": {
+              "contents": {
+                "Bytes": "print(\"Hello world!\")\n"
+              }
+            },
+            "ModuleScript.lua": {
+              "contents": {
+                "Bytes": "local module = {}\n\nreturn module\n"
+              }
+            },
+            "Script.server.lua": {
+              "contents": {
+                "Bytes": "print(\"Hello world!\")\n"
+              }
+            },
+            "init.server.lua": {
+              "contents": {
+                "Bytes": ""
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Folder/ScriptWithScriptDescendant": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            },
+            "init.server.lua": {
+              "contents": {
+                "Bytes": "print(\"Hello world!\")\n"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    },
+    "Folder/ScriptWithScriptDescendant/Function": {
+      "contents": {
+        "Vfs": {
+          "files": {
+            "LocalScript.client.lua": {
+              "contents": {
+                "Bytes": "print(\"Hello world!\")\n"
+              }
+            },
+            "init.meta.json": {
+              "contents": {
+                "Bytes": "{\n  \"className\": \"BindableFunction\",\n  \"ignoreUnknownInstances\": true\n}"
+              }
+            }
+          },
+          "tree": {}
+        }
+      }
+    }
+  },
+  "tree": {}
+}

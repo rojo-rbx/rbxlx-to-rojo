@@ -49,6 +49,8 @@ impl FileSystem {
         let source = root.join(SRC);
         let project = Project::new();
 
+        fs::create_dir(&source).ok(); // It'll error later if it matters
+
         Self {
             project,
             root,
@@ -84,7 +86,7 @@ impl InstructionReader for FileSystem {
             }
 
             Instruction::CreateFile { filename, contents } => {
-                let mut file = File::create(self.source.join(filename)).expect("can't create file");
+                let mut file = File::create(self.source.join(&filename)).unwrap_or_else(|error| panic!("can't create file {:?}: {:?}", filename, error));
                 file.write_all(&contents).expect("can't write file");
             }
 

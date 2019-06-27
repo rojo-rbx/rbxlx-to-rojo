@@ -48,9 +48,9 @@ pub(crate) struct MetaFile {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub class_name: Option<String>,
 
-    #[serde(rename = "properties")]
-    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
-    pub properties: BTreeMap<String, RbxValue>,
+    // #[serde(rename = "properties")]
+    // #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    // pub properties: BTreeMap<String, RbxValue>,
 
     #[serde(rename = "ignoreUnknownInstances")]
     pub ignore_unknown_instances: bool,
@@ -74,7 +74,7 @@ pub enum Instruction<'a> {
 }
 
 impl<'a> Instruction<'a> {
-    pub fn add_to_tree(instance: RbxInstance, path: PathBuf) -> Self {
+    pub fn add_to_tree(instance: &RbxInstance, path: PathBuf) -> Self {
         Instruction::AddToTree {
             name: instance.name.clone(),
             partition: Instruction::partition(&instance, path),

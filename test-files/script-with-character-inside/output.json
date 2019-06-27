@@ -1,22 +1,13 @@
 {
   "files": {
-    "ModuleScript": {
+    "ModuleScript.lua": {
       "contents": {
-        "Vfs": {
-          "files": {
-            "init.lua": {
-              "contents": {
-                "Bytes": "return {}\n"
-              }
-            },
-            "init.meta.json": {
-              "contents": {
-                "Bytes": "{\n  \"ignoreUnknownInstances\": true\n}"
-              }
-            }
-          },
-          "tree": {}
-        }
+        "Bytes": "return {}\n"
+      }
+    },
+    "ModuleScript.meta.json": {
+      "contents": {
+        "Bytes": "{\n  \"ignoreUnknownInstances\": true\n}"
       }
     }
   },

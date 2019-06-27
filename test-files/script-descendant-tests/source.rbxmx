@@ -1,0 +1,122 @@
+<roblox xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.roblox.com/roblox.xsd" version="4">
+	<Meta name="ExplicitAutoJoints">true</Meta>
+	<External>null</External>
+	<External>nil</External>
+	<Item class="Folder" referent="RBX8A46226722EC445A99ED2FC00AF51CF4">
+		<Properties>
+			<string name="Name">Folder</string>
+			<BinaryString name="Tags"></BinaryString>
+		</Properties>
+		<Item class="Script" referent="RBXA5FDB45EF6704DD9BB777E07FB13CF66">
+			<Properties>
+				<bool name="Disabled">false</bool>
+				<Content name="LinkedSource"><null></null></Content>
+				<string name="Name">ScriptWithNothingInside</string>
+				<string name="ScriptGuid">{CBB57CAC-D4FD-4BF6-B26D-9C269272591F}</string>
+				<ProtectedString name="Source"></ProtectedString>
+				<BinaryString name="Tags"></BinaryString>
+			</Properties>
+		</Item>
+		<Item class="Script" referent="RBX6C0222EE277E41DCBD0EEA079833C724">
+			<Properties>
+				<bool name="Disabled">false</bool>
+				<Content name="LinkedSource"><null></null></Content>
+				<string name="Name">ScriptWithJustScriptsInside</string>
+				<string name="ScriptGuid">{06865121-1B5D-4347-B8D4-8D5EB7C951DF}</string>
+				<ProtectedString name="Source"></ProtectedString>
+				<BinaryString name="Tags"></BinaryString>
+			</Properties>
+			<Item class="Script" referent="RBX43B61AE7A0BF4D4CBB18A487812AA652">
+				<Properties>
+					<bool name="Disabled">false</bool>
+					<Content name="LinkedSource"><null></null></Content>
+					<string name="Name">Script</string>
+					<string name="ScriptGuid">{42415E28-EC03-4BA5-8B84-9403F88C93A8}</string>
+					<ProtectedString name="Source"><![CDATA[print("Hello world!")
+]]></ProtectedString>
+					<BinaryString name="Tags"></BinaryString>
+				</Properties>
+			</Item>
+			<Item class="LocalScript" referent="RBX99BD400A0F064CBE9D42F8A047F4F7E6">
+				<Properties>
+					<bool name="Disabled">false</bool>
+					<Content name="LinkedSource"><null></null></Content>
+					<string name="Name">LocalScript</string>
+					<string name="ScriptGuid">{C59B984F-9811-49B8-9536-C9A4FE61F665}</string>
+					<ProtectedString name="Source"><![CDATA[print("Hello world!")
+]]></ProtectedString>
+					<BinaryString name="Tags"></BinaryString>
+				</Properties>
+			</Item>
+			<Item class="ModuleScript" referent="RBX355C9A3E06524DEAA894D28E1BED5675">
+				<Properties>
+					<Content name="LinkedSource"><null></null></Content>
+					<string name="Name">ModuleScript</string>
+					<string name="ScriptGuid">{2A909CAD-BC55-41C9-9505-68B420F73D84}</string>
+					<ProtectedString name="Source"><![CDATA[local module = {}
+
+return module
+]]></ProtectedString>
+					<BinaryString name="Tags"></BinaryString>
+				</Properties>
+			</Item>
+		</Item>
+		<Item class="Script" referent="RBX10CF67E17C8E4ECBB1C1C97AFCB87649">
+			<Properties>
+				<bool name="Disabled">false</bool>
+				<Content name="LinkedSource"><null></null></Content>
+				<string name="Name">ScriptWithNoScriptsInside</string>
+				<string name="ScriptGuid">{308A3A34-2AB4-40C0-8E96-20A07380FF37}</string>
+				<ProtectedString name="Source"><![CDATA[print("Hello world!")
+]]></ProtectedString>
+				<BinaryString name="Tags"></BinaryString>
+			</Properties>
+			<Item class="BindableEvent" referent="RBX0D7129E1B67F452FB1CFA33ED2384FE0">
+				<Properties>
+					<string name="Name">Event</string>
+					<BinaryString name="Tags"></BinaryString>
+				</Properties>
+			</Item>
+			<Item class="BindableFunction" referent="RBX0A4BA2329B104688BBBA339708EE7761">
+				<Properties>
+					<string name="Name">Function</string>
+					<BinaryString name="Tags"></BinaryString>
+				</Properties>
+			</Item>
+		</Item>
+		<Item class="Script" referent="RBXA0D217DA46D546D2BF9EA612F517D925">
+			<Properties>
+				<bool name="Disabled">false</bool>
+				<Content name="LinkedSource"><null></null></Content>
+				<string name="Name">ScriptWithScriptDescendant</string>
+				<string name="ScriptGuid">{AF35FC47-2F67-45A9-8808-8B1D0F4B2985}</string>
+				<ProtectedString name="Source"><![CDATA[print("Hello world!")
+]]></ProtectedString>
+				<BinaryString name="Tags"></BinaryString>
+			</Properties>
+			<Item class="BindableEvent" referent="RBX5E29C362AE1D442B8390BD9BD6977A74">
+				<Properties>
+					<string name="Name">Event</string>
+					<BinaryString name="Tags"></BinaryString>
+				</Properties>
+			</Item>
+			<Item class="BindableFunction" referent="RBX39A61A2AF96245B2941A57990AC96A6C">
+				<Properties>
+					<string name="Name">Function</string>
+					<BinaryString name="Tags"></BinaryString>
+				</Properties>
+				<Item class="LocalScript" referent="RBXB05D598D06F64A3CA93EF974DFA12322">
+					<Properties>
+						<bool name="Disabled">false</bool>
+						<Content name="LinkedSource"><null></null></Content>
+						<string name="Name">LocalScript</string>
+						<string name="ScriptGuid">{5609DD96-E1A0-4490-AAA2-5C9B55709F90}</string>
+						<ProtectedString name="Source"><![CDATA[print("Hello world!")
+]]></ProtectedString>
+						<BinaryString name="Tags"></BinaryString>
+					</Properties>
+				</Item>
+			</Item>
+		</Item>
+	</Item>
+</roblox>

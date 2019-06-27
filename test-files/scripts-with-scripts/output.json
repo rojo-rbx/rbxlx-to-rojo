@@ -18,14 +18,14 @@
       "contents": {
         "Vfs": {
           "files": {
+            "ModuleScript.lua": {
+              "contents": {
+                "Bytes": "local module = {}\n\nreturn module\n"
+              }
+            },
             "init.client.lua": {
               "contents": {
                 "Bytes": "print(\"Hello world!\")\n"
-              }
-            },
-            "init.meta.json": {
-              "contents": {
-                "Bytes": "{\n  \"ignoreUnknownInstances\": true\n}"
               }
             }
           },
@@ -37,14 +37,14 @@
       "contents": {
         "Vfs": {
           "files": {
-            "init.lua": {
+            "ModuleScript.lua": {
               "contents": {
                 "Bytes": "local module = {}\n\nreturn module\n"
               }
             },
-            "init.meta.json": {
+            "init.lua": {
               "contents": {
-                "Bytes": "{\n  \"ignoreUnknownInstances\": true\n}"
+                "Bytes": "local module = {}\n\nreturn module\n"
               }
             }
           },
@@ -56,9 +56,9 @@
       "contents": {
         "Vfs": {
           "files": {
-            "init.meta.json": {
+            "ModuleScript.lua": {
               "contents": {
-                "Bytes": "{\n  \"ignoreUnknownInstances\": true\n}"
+                "Bytes": "local module = {}\n\nreturn module\n"
               }
             },
             "init.server.lua": {

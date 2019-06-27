@@ -16,7 +16,7 @@
             },
             "init.meta.json": {
               "contents": {
-                "Bytes": "{\n  \"className\": \"Tool\",\n  \"properties\": {\n    \"Grip\": {\n      \"Type\": \"CFrame\",\n      \"Value\": [\n        0.0,\n        0.0,\n        -1.5,\n        0.0,\n        0.0,\n        1.0,\n        1.0,\n        0.0,\n        0.0,\n        0.0,\n        1.0,\n        0.0\n      ]\n    },\n    \"TextureId\": {\n      \"Type\": \"Content\",\n      \"Value\": \"rbxasset://Textures/Sword128.png\"\n    }\n  },\n  \"ignoreUnknownInstances\": true\n}"
+                "Bytes": "{\n  \"className\": \"Tool\",\n  \"ignoreUnknownInstances\": true\n}"
               }
             }
           },

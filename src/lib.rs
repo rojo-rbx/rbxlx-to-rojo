@@ -74,7 +74,7 @@ fn repr_instance<'a>(
                         contents: Cow::Owned(
                             serde_json::to_string_pretty(&MetaFile {
                                 class_name: None,
-                                properties: BTreeMap::new(),
+                                // properties: BTreeMap::new(),
                                 ignore_unknown_instances: true,
                             })
                             .unwrap()
@@ -110,34 +110,82 @@ fn repr_instance<'a>(
                     Cow::Borrowed(base),
                 ))
             } else {
+                let meta_contents = Cow::Owned(
+                    serde_json::to_string_pretty(&MetaFile {
+                        class_name: None,
+                        // properties: BTreeMap::new(),
+                        ignore_unknown_instances: true,
+                    })
+                    .expect("couldn't serialize meta")
+                    .as_bytes()
+                    .into(),
+                );
+
+                let script_children_count = child.get_children_ids()
+                    .iter()
+                    .filter(|id| has_scripts.get(id) == Some(&true))
+                    .count();
+
+                let total_children_count = child.get_children_ids().len();
                 let folder_path: Cow<'a, Path> = Cow::Owned(base.join(&child.name));
-                Some((
-                    vec![
-                        Instruction::CreateFolder {
-                            folder: folder_path.clone(),
-                        },
-                        Instruction::CreateFile {
-                            filename: Cow::Owned(
-                                folder_path.join(format!("init{}.lua", extension)),
-                            ),
-                            contents: Cow::Borrowed(source),
-                        },
-                        Instruction::CreateFile {
-                            filename: Cow::Owned(folder_path.join("init.meta.json")),
-                            contents: Cow::Owned(
-                                serde_json::to_string_pretty(&MetaFile {
-                                    class_name: None,
-                                    properties: BTreeMap::new(),
-                                    ignore_unknown_instances: true,
-                                })
-                                .expect("couldn't serialize meta")
-                                .as_bytes()
-                                .into(),
-                            ),
-                        },
-                    ],
-                    folder_path,
-                ))
+
+                // If there's no script children, make a named meta file
+                // If there's some script children, make a folder with a meta file
+                // If there's only script children, don't bother with a meta file at all
+                // TODO: Lot of redundant code here
+                match script_children_count {
+                    _ if script_children_count == total_children_count => {
+                        Some((
+                            vec![
+                                Instruction::CreateFolder {
+                                    folder: folder_path.clone(),
+                                },
+                                Instruction::CreateFile {
+                                    filename: Cow::Owned(folder_path.join(format!("init{}.lua", extension))),
+                                    contents: Cow::Borrowed(source),
+                                }
+                            ],
+                            folder_path
+                        ))
+                    },
+
+                    0 => {
+                        Some((
+                            vec![
+                                Instruction::CreateFile {
+                                    filename: Cow::Owned(base.join(format!("{}{}.lua", child.name, extension))),
+                                    contents: Cow::Borrowed(source),
+                                },
+                                Instruction::CreateFile {
+                                    filename: Cow::Owned(base.join(format!("{}.meta.json", child.name))),
+                                    contents: meta_contents,
+                                },
+                            ],
+                            Cow::Borrowed(base)
+                        ))
+                    },
+
+                    _ => {
+                        Some((
+                            vec![
+                                Instruction::CreateFolder {
+                                    folder: folder_path.clone(),
+                                },
+                                Instruction::CreateFile {
+                                    filename: Cow::Owned(
+                                        folder_path.join(format!("init{}.lua", extension)),
+                                    ),
+                                    contents: Cow::Borrowed(source),
+                                },
+                                Instruction::CreateFile {
+                                    filename: Cow::Owned(folder_path.join("init.meta.json")),
+                                    contents: meta_contents,
+                                },
+                            ],
+                            folder_path
+                        ))
+                    },
+                }
             }
         }
 
@@ -150,7 +198,7 @@ fn repr_instance<'a>(
             //     properties: HashMap::new(),
             // });
 
-            let properties = match rbx_reflection::get_class_descriptor(other_class) {
+            match rbx_reflection::get_class_descriptor(other_class) {
                 Some(reflected) => {
                     let treat_as_service = RESPECTED_SERVICES.contains(other_class);
                     // Don't represent services not in respected-services
@@ -158,40 +206,9 @@ fn repr_instance<'a>(
                         return None;
                     }
 
-                    let mut patch = child.clone();
-                    patch.properties.retain(|key, value| {
-                        if is_default_property(key, value) {
-                            return false;
-                        }
-
-                        let retain = if let Some(default) = reflected.get_default_value(key.as_str()) {
-                            match default.try_convert_ref(value.get_type()) {
-                                RbxValueConversion::Converted(converted) => &converted != value,
-                                RbxValueConversion::Unnecessary => default != value,
-                                RbxValueConversion::Failed => {
-                                    debug!("property type in reflection doesnt match given? {} expects {:?}, given {:?}", key, default.get_type(), value.get_type());
-                                    true
-                                },
-                            }
-                        } else {
-                            debug!("property not in reflection? {}.{}", other_class, key);
-                            true
-                        };
-
-                        if retain {
-                            // We don't want to scare the user if we weren't going to save it anyway
-                            if value.get_type() == RbxValueType::Ref {
-                                warn!("rbxlx-to-rojo does not currently support Refs (for {}.{})", get_full_name(&child, &tree), key);
-                                return false;
-                            }
-                        }
-
-                        retain
-                    });
-
                     if treat_as_service {
-                        // Don't represent empty services with no property changes
-                        if patch.properties.is_empty() && child.get_children_ids().is_empty() {
+                        // Don't represent empty services
+                        if child.get_children_ids().is_empty() {
                             return None;
                         }
 
@@ -199,7 +216,7 @@ fn repr_instance<'a>(
                         let mut instructions = Vec::new();
 
                         if !NON_TREE_SERVICES.contains(other_class) {
-                            instructions.push(Instruction::add_to_tree(patch, new_base.to_path_buf()));
+                            instructions.push(Instruction::add_to_tree(&child, new_base.to_path_buf()));
                         }
 
                         if !child.get_children_ids().is_empty() {
@@ -210,22 +227,18 @@ fn repr_instance<'a>(
 
                         return Some((instructions, new_base));
                     }
-
-                    Cow::Owned(patch.properties.drain().collect())
                 }
 
                 None => {
                     debug!("class is not in reflection? {}", other_class);
-                    Cow::Borrowed(&child.properties)
                 }
             }
-            .into_owned();
 
             // If there are scripts, we'll need to make a .meta.json folder
             let folder_path: Cow<'a, Path> = Cow::Owned(base.join(&child.name));
             let meta = MetaFile {
                 class_name: Some(child.class_name.clone()),
-                properties: properties.into_iter().collect(),
+                // properties: properties.into_iter().collect(),
                 ignore_unknown_instances: true,
             };
 
@@ -341,24 +354,21 @@ fn check_has_scripts(
     instance: &RbxInstance,
     has_scripts: &mut HashMap<RbxId, bool>,
 ) -> bool {
+    let mut children_have_scripts = false;
+
+    for child_id in instance.get_children_ids() {
+        let result = check_has_scripts(
+            tree,
+            tree.get_instance(*child_id).expect("fake child id?"),
+            has_scripts,
+        );
+
+        children_have_scripts = children_have_scripts || result;
+    }
+
     let result = match instance.class_name.as_str() {
         "Script" | "LocalScript" | "ModuleScript" => true,
-
-        _ => {
-            let mut children_have_scripts = false;
-
-            for child_id in instance.get_children_ids() {
-                let result = check_has_scripts(
-                    tree,
-                    tree.get_instance(*child_id).expect("fake child id?"),
-                    has_scripts,
-                );
-
-                children_have_scripts = children_have_scripts || result;
-            }
-
-            children_have_scripts
-        }
+        _ => children_have_scripts,
     };
 
     has_scripts.insert(instance.get_id(), result);

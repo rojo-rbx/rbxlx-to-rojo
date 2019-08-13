@@ -12,7 +12,7 @@ Before you can port your game into Rojo projects, you need a .rbxlx file. If you
 
 Click on the drop-down menu where it says "Roblox Place Files (.rbxl)".
 
-Click on the "Roblox XML Place Files(.rbxlx)", and then click "Save".
+Click on the "Roblox XML Place Files (.rbxlx)", and then click "Save".
 
 Create a folder and name it whatever you want.
 ### Steps to port the game:

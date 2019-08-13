@@ -8,7 +8,7 @@ You also need a rbxlx place file that has a script. If there aren't any scripts 
 
 Download the latest release of rbxlx-to-rojo here: https://github.com/rojo-rbx/rbxlx-to-rojo/releases
 ## Porting the game
-Before you can port your game into Rojo projects, you need a .rbxlx file. If you have an existing game that isn't an .rbxlx file, click on File -> Save to file as.
+Before you can port your game into Rojo projects, you need a .rbxlx file. If you have an existing game that isn't an .rbxlx file, Go to studio, click on any place, and then click on File -> Save to file as.
 
 Then, click on the drop-down menu where it says "Roblox Place Files(.rbxl).
 

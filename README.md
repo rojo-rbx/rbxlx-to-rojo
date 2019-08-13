@@ -8,12 +8,17 @@ You also need a rbxlx place file that has a script. If there aren't any scripts 
 
 Download the latest release of rbxlx-to-rojo here: https://github.com/rojo-rbx/rbxlx-to-rojo/releases
 ## Porting the game
-Let's assume we have a rbxlx file named "game", with a script in ServerScriptService.
+Before you can port your game into Rojo projects, you need a .rbxlx file. If you have an existing game that isn't an .rbxlx file, click on File -> Save to file as.
 
+Then, click on the drop-down menu where it says "Roblox Place Files(.rbxl).
+
+Click on the "Roblox XML Place Files(.rbxlx)", and then click "Save".
+
+Create a folder and name it whatever you want.
 ### Steps to port the game:
 1. Double-click on rbxlx-to-rojo on wherever you installed it.
-2. Select a place file.
-3. Select the path where you want to place it.
+2. Select the .rbxlx file you saved earlier.
+3. Now, select the folder that you just created.
 
 If you followed the steps correctly, you should see something that looks like this:
 ![](assets/folders.png)

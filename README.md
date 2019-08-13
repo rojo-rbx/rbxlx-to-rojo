@@ -16,7 +16,7 @@ Let's assume we have a rbxlx file named "game", with a script in ServerScriptSer
 3. Select the path where you want to place it.
 
 If you followed the steps correctly, you should see something that looks like this:
-![](assets/folder.png)
+![](assets/folders.png)
 
 Congratulations, you successfully ported an existing game using rbxlx-to-rojo!
 

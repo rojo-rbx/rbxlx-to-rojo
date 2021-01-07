@@ -1,4 +1,4 @@
-use rbx_dom_weak::RbxInstance;
+use rbx_dom_weak::Instance;
 use serde::{Deserialize, Serialize, Serializer};
 use std::{
     borrow::Cow,
@@ -73,16 +73,16 @@ pub enum Instruction<'a> {
 }
 
 impl<'a> Instruction<'a> {
-    pub fn add_to_tree(instance: &RbxInstance, path: PathBuf) -> Self {
+    pub fn add_to_tree(instance: &Instance, path: PathBuf) -> Self {
         Instruction::AddToTree {
             name: instance.name.clone(),
             partition: Instruction::partition(&instance, path),
         }
     }
 
-    pub fn partition(instance: &RbxInstance, path: PathBuf) -> TreePartition {
+    pub fn partition(instance: &Instance, path: PathBuf) -> TreePartition {
         TreePartition {
-            class_name: instance.class_name.clone(),
+            class_name: instance.class.clone(),
             children: BTreeMap::new(),
             ignore_unknown_instances: true,
             path: Some(path),

@@ -51,7 +51,6 @@ pub(crate) struct MetaFile {
     // #[serde(rename = "properties")]
     // #[serde(skip_serializing_if = "BTreeMap::is_empty")]
     // pub properties: BTreeMap<String, RbxValue>,
-
     #[serde(rename = "ignoreUnknownInstances")]
     pub ignore_unknown_instances: bool,
 }

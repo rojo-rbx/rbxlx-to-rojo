@@ -94,7 +94,8 @@ fn repr_instance<'a>(
                     .into(),
                 );
 
-                let script_children_count = child.get_children_ids()
+                let script_children_count = child
+                    .get_children_ids()
                     .iter()
                     .filter(|id| has_scripts.get(id) == Some(&true))
                     .count();
@@ -107,57 +108,57 @@ fn repr_instance<'a>(
                 // If there's only script children, don't bother with a meta file at all
                 // TODO: Lot of redundant code here
                 match script_children_count {
-                    _ if script_children_count == total_children_count => {
-                        Some((
-                            vec![
-                                Instruction::CreateFolder {
-                                    folder: folder_path.clone(),
-                                },
-                                Instruction::CreateFile {
-                                    filename: Cow::Owned(folder_path.join(format!("init{}.lua", extension))),
-                                    contents: Cow::Borrowed(source),
-                                }
-                            ],
-                            folder_path
-                        ))
-                    },
+                    _ if script_children_count == total_children_count => Some((
+                        vec![
+                            Instruction::CreateFolder {
+                                folder: folder_path.clone(),
+                            },
+                            Instruction::CreateFile {
+                                filename: Cow::Owned(
+                                    folder_path.join(format!("init{}.lua", extension)),
+                                ),
+                                contents: Cow::Borrowed(source),
+                            },
+                        ],
+                        folder_path,
+                    )),
 
-                    0 => {
-                        Some((
-                            vec![
-                                Instruction::CreateFile {
-                                    filename: Cow::Owned(base.join(format!("{}{}.lua", child.name, extension))),
-                                    contents: Cow::Borrowed(source),
-                                },
-                                Instruction::CreateFile {
-                                    filename: Cow::Owned(base.join(format!("{}.meta.json", child.name))),
-                                    contents: meta_contents,
-                                },
-                            ],
-                            Cow::Borrowed(base)
-                        ))
-                    },
+                    0 => Some((
+                        vec![
+                            Instruction::CreateFile {
+                                filename: Cow::Owned(
+                                    base.join(format!("{}{}.lua", child.name, extension)),
+                                ),
+                                contents: Cow::Borrowed(source),
+                            },
+                            Instruction::CreateFile {
+                                filename: Cow::Owned(
+                                    base.join(format!("{}.meta.json", child.name)),
+                                ),
+                                contents: meta_contents,
+                            },
+                        ],
+                        Cow::Borrowed(base),
+                    )),
 
-                    _ => {
-                        Some((
-                            vec![
-                                Instruction::CreateFolder {
-                                    folder: folder_path.clone(),
-                                },
-                                Instruction::CreateFile {
-                                    filename: Cow::Owned(
-                                        folder_path.join(format!("init{}.lua", extension)),
-                                    ),
-                                    contents: Cow::Borrowed(source),
-                                },
-                                Instruction::CreateFile {
-                                    filename: Cow::Owned(folder_path.join("init.meta.json")),
-                                    contents: meta_contents,
-                                },
-                            ],
-                            folder_path
-                        ))
-                    },
+                    _ => Some((
+                        vec![
+                            Instruction::CreateFolder {
+                                folder: folder_path.clone(),
+                            },
+                            Instruction::CreateFile {
+                                filename: Cow::Owned(
+                                    folder_path.join(format!("init{}.lua", extension)),
+                                ),
+                                contents: Cow::Borrowed(source),
+                            },
+                            Instruction::CreateFile {
+                                filename: Cow::Owned(folder_path.join("init.meta.json")),
+                                contents: meta_contents,
+                            },
+                        ],
+                        folder_path,
+                    )),
                 }
             }
         }
@@ -189,7 +190,8 @@ fn repr_instance<'a>(
                         let mut instructions = Vec::new();
 
                         if !NON_TREE_SERVICES.contains(other_class) {
-                            instructions.push(Instruction::add_to_tree(&child, new_base.to_path_buf()));
+                            instructions
+                                .push(Instruction::add_to_tree(&child, new_base.to_path_buf()));
                         }
 
                         if !child.get_children_ids().is_empty() {
@@ -348,7 +350,7 @@ fn check_has_scripts(
     result
 }
 
-pub fn process_instructions(tree: &RbxTree, instruction_reader: &mut InstructionReader) {
+pub fn process_instructions(tree: &RbxTree, instruction_reader: &mut dyn InstructionReader) {
     let root = tree.get_root_id();
     let root_instance = tree.get_instance(root).expect("fake root id?");
     let path = PathBuf::new();

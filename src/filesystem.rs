@@ -86,7 +86,9 @@ impl InstructionReader for FileSystem {
             }
 
             Instruction::CreateFile { filename, contents } => {
-                let mut file = File::create(self.source.join(&filename)).unwrap_or_else(|error| panic!("can't create file {:?}: {:?}", filename, error));
+                let mut file = File::create(self.source.join(&filename)).unwrap_or_else(|error| {
+                    panic!("can't create file {:?}: {:?}", filename, error)
+                });
                 file.write_all(&contents).expect("can't write file");
             }
 

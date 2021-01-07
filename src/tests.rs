@@ -81,8 +81,7 @@ impl InstructionReader for VirtualFileSystem {
                         contents: if rbxmx {
                             let tree = rbx_xml::from_str_default(&contents_string)
                                 .expect("couldn't decode encoded xml");
-                            let child_id =
-                                tree.get_by_ref(tree.root().referent()).unwrap().children()[0];
+                            let child_id = tree.root().children()[0];
                             let child_instance = tree.get_by_ref(child_id).unwrap().clone();
                             VirtualFileContents::Instance(child_instance.properties.to_owned())
                         } else {

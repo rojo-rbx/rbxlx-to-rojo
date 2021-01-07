@@ -3,7 +3,7 @@ use rbxlx_to_rojo::{filesystem::FileSystem, process_instructions};
 use std::{
     borrow::Cow,
     fmt, fs,
-    io::{self, Write},
+    io::{self, BufReader, Write},
     path::PathBuf,
     sync::{Arc, RwLock},
 };
@@ -106,8 +106,10 @@ fn routine() -> Result<(), Problem> {
     });
 
     info!("Opening place file");
-    let file_source = fs::File::open(&file_path)
-        .map_err(|error| Problem::IoError("read the place file", error))?;
+    let file_source = BufReader::new(
+        fs::File::open(&file_path)
+            .map_err(|error| Problem::IoError("read the place file", error))?,
+    );
     info!("Decoding place file, this is the longest part...");
 
     let tree = match file_path

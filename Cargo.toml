@@ -17,10 +17,10 @@ required-features = ["cli"]
 env_logger = "0.6"
 lazy_static = "1.4"
 log = "0.4"
-rbx_binary = { git = "https://github.com/rojo-rbx/rbx-dom/", rev = "54531ee87511312fedfd3e3767d6b9f8d14a8a80" }
-rbx_dom_weak = { git = "https://github.com/rojo-rbx/rbx-dom/", rev = "54531ee87511312fedfd3e3767d6b9f8d14a8a80" }
+rbx_binary = { git = "https://github.com/rojo-rbx/rbx-dom/", branch = "master" }
+rbx_dom_weak = { git = "https://github.com/rojo-rbx/rbx-dom/", branch = "master" }
 rbx_reflection = "3" # TODO: This won't always be latest, and that's an issue
-rbx_xml = { git = "https://github.com/rojo-rbx/rbx-dom/", rev = "54531ee87511312fedfd3e3767d6b9f8d14a8a80" }
+rbx_xml = { git = "https://github.com/rojo-rbx/rbx-dom/", branch = "master" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 

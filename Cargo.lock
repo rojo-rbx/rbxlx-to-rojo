@@ -382,7 +382,7 @@ dependencies = [
 [[package]]
 name = "rbx_binary"
 version = "0.6.0-dev"
-source = "git+https://github.com/rojo-rbx/rbx-dom/?rev=54531ee87511312fedfd3e3767d6b9f8d14a8a80#54531ee87511312fedfd3e3767d6b9f8d14a8a80"
+source = "git+https://github.com/rojo-rbx/rbx-dom/?branch=master#54531ee87511312fedfd3e3767d6b9f8d14a8a80"
 dependencies = [
  "log",
  "lz4",
@@ -410,7 +410,7 @@ dependencies = [
 [[package]]
 name = "rbx_dom_weak"
 version = "2.0.0-dev"
-source = "git+https://github.com/rojo-rbx/rbx-dom/?rev=54531ee87511312fedfd3e3767d6b9f8d14a8a80#54531ee87511312fedfd3e3767d6b9f8d14a8a80"
+source = "git+https://github.com/rojo-rbx/rbx-dom/?branch=master#54531ee87511312fedfd3e3767d6b9f8d14a8a80"
 dependencies = [
  "rbx_types",
  "serde",
@@ -431,7 +431,7 @@ dependencies = [
 [[package]]
 name = "rbx_reflection"
 version = "4.0.0-dev"
-source = "git+https://github.com/rojo-rbx/rbx-dom/?rev=54531ee87511312fedfd3e3767d6b9f8d14a8a80#54531ee87511312fedfd3e3767d6b9f8d14a8a80"
+source = "git+https://github.com/rojo-rbx/rbx-dom/?branch=master#54531ee87511312fedfd3e3767d6b9f8d14a8a80"
 dependencies = [
  "rbx_types",
  "serde",
@@ -440,7 +440,7 @@ dependencies = [
 [[package]]
 name = "rbx_reflection_database"
 version = "0.1.0"
-source = "git+https://github.com/rojo-rbx/rbx-dom/?rev=54531ee87511312fedfd3e3767d6b9f8d14a8a80#54531ee87511312fedfd3e3767d6b9f8d14a8a80"
+source = "git+https://github.com/rojo-rbx/rbx-dom/?branch=master#54531ee87511312fedfd3e3767d6b9f8d14a8a80"
 dependencies = [
  "lazy_static",
  "rbx_reflection 4.0.0-dev",
@@ -451,7 +451,7 @@ dependencies = [
 [[package]]
 name = "rbx_types"
 version = "0.2.0"
-source = "git+https://github.com/rojo-rbx/rbx-dom/?rev=54531ee87511312fedfd3e3767d6b9f8d14a8a80#54531ee87511312fedfd3e3767d6b9f8d14a8a80"
+source = "git+https://github.com/rojo-rbx/rbx-dom/?branch=master#54531ee87511312fedfd3e3767d6b9f8d14a8a80"
 dependencies = [
  "base64",
  "bitflags",
@@ -464,7 +464,7 @@ dependencies = [
 [[package]]
 name = "rbx_xml"
 version = "0.12.0-dev"
-source = "git+https://github.com/rojo-rbx/rbx-dom/?rev=54531ee87511312fedfd3e3767d6b9f8d14a8a80#54531ee87511312fedfd3e3767d6b9f8d14a8a80"
+source = "git+https://github.com/rojo-rbx/rbx-dom/?branch=master#54531ee87511312fedfd3e3767d6b9f8d14a8a80"
 dependencies = [
  "base64",
  "log",

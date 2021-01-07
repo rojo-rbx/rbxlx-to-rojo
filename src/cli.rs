@@ -117,10 +117,10 @@ fn routine() -> Result<(), Problem> {
         .map(|extension| extension.to_string_lossy())
     {
         Some(Cow::Borrowed("rbxmx")) | Some(Cow::Borrowed("rbxlx")) => {
-            rbx_xml::from_reader_default(&file_source).map_err(Problem::XMLDecodeError)
+            rbx_xml::from_reader_default(file_source).map_err(Problem::XMLDecodeError)
         }
         Some(Cow::Borrowed("rbxm")) | Some(Cow::Borrowed("rbxl")) => {
-            rbx_binary::from_reader_default(&file_source).map_err(Problem::BinaryDecodeError)
+            rbx_binary::from_reader_default(file_source).map_err(Problem::BinaryDecodeError)
         }
         _ => Err(Problem::InvalidFile),
     }?;

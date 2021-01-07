@@ -1,5 +1,8 @@
 use log::debug;
-use rbx_dom_weak::{RbxId, RbxInstance, RbxTree, RbxValue};
+use rbx_dom_weak::{
+    types::{Ref, Variant},
+    Instance, WeakDom,
+};
 use std::{
     borrow::Cow,
     collections::{HashMap, HashSet},
@@ -22,19 +25,19 @@ lazy_static::lazy_static! {
 struct TreeIterator<'a, I: InstructionReader + ?Sized> {
     instruction_reader: &'a mut I,
     path: &'a Path,
-    tree: &'a RbxTree,
+    tree: &'a WeakDom,
 }
 
 fn repr_instance<'a>(
     base: &'a Path,
-    child: &'a RbxInstance,
-    has_scripts: &'a HashMap<RbxId, bool>,
+    child: &'a Instance,
+    has_scripts: &'a HashMap<Ref, bool>,
 ) -> Option<(Vec<Instruction<'a>>, Cow<'a, Path>)> {
-    if has_scripts.get(&child.get_id()) != Some(&true) {
+    if has_scripts.get(&child.referent()) != Some(&true) {
         return None;
     }
 
-    match child.class_name.as_str() {
+    match child.class.as_str() {
         "Folder" => {
             let folder_path = base.join(&child.name);
             let owned: Cow<'a, Path> = Cow::Owned(folder_path);
@@ -61,7 +64,7 @@ fn repr_instance<'a>(
         }
 
         "Script" | "LocalScript" | "ModuleScript" => {
-            let extension = match child.class_name.as_str() {
+            let extension = match child.class.as_str() {
                 "Script" => ".server",
                 "LocalScript" => ".client",
                 "ModuleScript" => "",
@@ -69,12 +72,12 @@ fn repr_instance<'a>(
             };
 
             let source = match child.properties.get("Source").expect("no Source") {
-                RbxValue::String { value } => value,
+                Variant::String(value) => value,
                 _ => unreachable!(),
             }
             .as_bytes();
 
-            if child.get_children_ids().is_empty() {
+            if child.children().is_empty() {
                 Some((
                     vec![Instruction::CreateFile {
                         filename: Cow::Owned(base.join(format!("{}{}.lua", child.name, extension))),
@@ -95,12 +98,12 @@ fn repr_instance<'a>(
                 );
 
                 let script_children_count = child
-                    .get_children_ids()
+                    .children()
                     .iter()
                     .filter(|id| has_scripts.get(id) == Some(&true))
                     .count();
 
-                let total_children_count = child.get_children_ids().len();
+                let total_children_count = child.children().len();
                 let folder_path: Cow<'a, Path> = Cow::Owned(base.join(&child.name));
 
                 // If there's no script children, make a named meta file
@@ -165,13 +168,6 @@ fn repr_instance<'a>(
 
         other_class => {
             // When all else fails, we can make a meta folder if there's scripts in it
-
-            // let mut tree = RbxTree::new(RbxInstanceProperties {
-            //     name: "VirtualInstance".to_string(),
-            //     class_name: "DataModel".to_string(),
-            //     properties: HashMap::new(),
-            // });
-
             match rbx_reflection::get_class_descriptor(other_class) {
                 Some(reflected) => {
                     let treat_as_service = RESPECTED_SERVICES.contains(other_class);
@@ -182,7 +178,7 @@ fn repr_instance<'a>(
 
                     if treat_as_service {
                         // Don't represent empty services
-                        if child.get_children_ids().is_empty() {
+                        if child.children().is_empty() {
                             return None;
                         }
 
@@ -194,7 +190,7 @@ fn repr_instance<'a>(
                                 .push(Instruction::add_to_tree(&child, new_base.to_path_buf()));
                         }
 
-                        if !child.get_children_ids().is_empty() {
+                        if !child.children().is_empty() {
                             instructions.push(Instruction::CreateFolder {
                                 folder: new_base.clone(),
                             });
@@ -212,7 +208,7 @@ fn repr_instance<'a>(
             // If there are scripts, we'll need to make a .meta.json folder
             let folder_path: Cow<'a, Path> = Cow::Owned(base.join(&child.name));
             let meta = MetaFile {
-                class_name: Some(child.class_name.clone()),
+                class_name: Some(child.class.clone()),
                 // properties: properties.into_iter().collect(),
                 ignore_unknown_instances: true,
             };
@@ -234,38 +230,16 @@ fn repr_instance<'a>(
                 ],
                 folder_path,
             ))
-
-            // let properties = RbxInstanceProperties {
-            //     name: child.name.clone(),
-            //     class_name: other_class.to_string(),
-            //     properties,
-            // };
-
-            // let root_id = tree.get_root_id();
-            // let id = tree.insert_instance(properties, root_id);
-
-            // let mut buffer = Vec::new();
-            // rbx_xml::to_writer_default(&mut buffer, &tree, &[id]).map_err(Error::XmlEncodeError)?;
-            // Ok((
-            //     vec![Instruction::CreateFile {
-            //         filename: Cow::Owned(base.join(&format!("{}.rbxmx", child.name))),
-            //         contents: Cow::Owned(buffer),
-            //     }],
-            //     Cow::Borrowed(base),
-            // ))
         }
     }
 }
 
 impl<'a, I: InstructionReader + ?Sized> TreeIterator<'a, I> {
-    fn visit_instructions(&mut self, instance: &RbxInstance, has_scripts: &HashMap<RbxId, bool>) {
-        for child_id in instance.get_children_ids() {
-            let child = self
-                .tree
-                .get_instance(*child_id)
-                .expect("got fake child id?");
+    fn visit_instructions(&mut self, instance: &Instance, has_scripts: &HashMap<Ref, bool>) {
+        for child_id in instance.children() {
+            let child = self.tree.get_by_ref(*child_id).expect("got fake child id?");
 
-            let (instructions_to_create_base, path) = if child.class_name == "StarterPlayer" {
+            let (instructions_to_create_base, path) = if child.class == "StarterPlayer" {
                 // We can't respect StarterPlayer as a service, because then Rojo
                 // tries to delete StarterPlayerScripts and whatnot, which is not valid.
                 let folder_path: Cow<'a, Path> = Cow::Owned(self.path.join(&child.name));
@@ -279,13 +253,13 @@ impl<'a, I: InstructionReader + ?Sized> TreeIterator<'a, I> {
                     instructions.push(Instruction::AddToTree {
                         name: child.name.clone(),
                         partition: TreePartition {
-                            class_name: child.class_name.clone(),
+                            class_name: child.class.clone(),
                             children: child
-                                .get_children_ids()
+                                .children()
                                 .iter()
                                 .filter(|id| has_scripts.get(id) == Some(&true))
                                 .map(|child_id| {
-                                    let child = self.tree.get_instance(*child_id).unwrap();
+                                    let child = self.tree.get_by_ref(*child_id).unwrap();
                                     (
                                         child.name.clone(),
                                         Instruction::partition(
@@ -325,34 +299,34 @@ impl<'a, I: InstructionReader + ?Sized> TreeIterator<'a, I> {
 }
 
 fn check_has_scripts(
-    tree: &RbxTree,
-    instance: &RbxInstance,
-    has_scripts: &mut HashMap<RbxId, bool>,
+    tree: &WeakDom,
+    instance: &Instance,
+    has_scripts: &mut HashMap<Ref, bool>,
 ) -> bool {
     let mut children_have_scripts = false;
 
-    for child_id in instance.get_children_ids() {
+    for child_id in instance.children() {
         let result = check_has_scripts(
             tree,
-            tree.get_instance(*child_id).expect("fake child id?"),
+            tree.get_by_ref(*child_id).expect("fake child id?"),
             has_scripts,
         );
 
         children_have_scripts = children_have_scripts || result;
     }
 
-    let result = match instance.class_name.as_str() {
+    let result = match instance.class.as_str() {
         "Script" | "LocalScript" | "ModuleScript" => true,
         _ => children_have_scripts,
     };
 
-    has_scripts.insert(instance.get_id(), result);
+    has_scripts.insert(instance.referent(), result);
     result
 }
 
-pub fn process_instructions(tree: &RbxTree, instruction_reader: &mut dyn InstructionReader) {
-    let root = tree.get_root_id();
-    let root_instance = tree.get_instance(root).expect("fake root id?");
+pub fn process_instructions(tree: &WeakDom, instruction_reader: &mut dyn InstructionReader) {
+    let root = tree.root_ref();
+    let root_instance = tree.get_by_ref(root).expect("fake root id?");
     let path = PathBuf::new();
 
     let mut has_scripts = HashMap::new();

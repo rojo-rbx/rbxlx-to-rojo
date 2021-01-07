@@ -1,28 +1,35 @@
 use log::info;
 use rbxlx_to_rojo::{filesystem::FileSystem, process_instructions};
 use std::{
+    borrow::Cow,
     fmt, fs,
-    io::{self, Write},
+    io::{self, BufReader, Write},
     path::PathBuf,
     sync::{Arc, RwLock},
 };
 
 #[derive(Debug)]
 enum Problem {
-    DecodeError(rbx_xml::DecodeError),
+    BinaryDecodeError(rbx_binary::DecodeError),
+    InvalidFile,
     IoError(&'static str, io::Error),
     NFDCancel,
     NFDError(String),
+    XMLDecodeError(rbx_xml::DecodeError),
 }
 
 impl fmt::Display for Problem {
     fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Problem::DecodeError(error) => write!(
+            Problem::BinaryDecodeError(error) => write!(
                 formatter,
-                "While attempting to decode the place file, at {} rbx_xml didn't know what to do",
+                "While attempting to decode the place file, at {} rbx_binary didn't know what to do",
                 error,
             ),
+
+            Problem::InvalidFile => {
+                write!(formatter, "The file provided does not have a recognized file extension")
+            }
 
             Problem::IoError(doing_what, error) => {
                 write!(formatter, "While attempting to {}, {}", doing_what, error)
@@ -33,6 +40,12 @@ impl fmt::Display for Problem {
             Problem::NFDError(error) => write!(
                 formatter,
                 "Something went wrong when choosing a file: {}",
+                error,
+            ),
+
+            Problem::XMLDecodeError(error) => write!(
+                formatter,
+                "While attempting to decode the place file, at {} rbx_xml didn't know what to do",
                 error,
             ),
         }
@@ -81,9 +94,9 @@ fn routine() -> Result<(), Problem> {
     info!("rbxlx-to-rojo {}", env!("CARGO_PKG_VERSION"));
 
     info!("Select a place file.");
-    let rbxlx_path = PathBuf::from(match std::env::args().nth(1) {
+    let file_path = PathBuf::from(match std::env::args().nth(1) {
         Some(text) => text,
-        None => match nfd::open_file_dialog(Some("rbxlx,rbxmx"), None)
+        None => match nfd::open_file_dialog(Some("rbxl,rbxm,rbxlx,rbxmx"), None)
             .map_err(|error| Problem::NFDError(error.to_string()))?
         {
             nfd::Response::Okay(path) => path,
@@ -93,15 +106,29 @@ fn routine() -> Result<(), Problem> {
     });
 
     info!("Opening place file");
-    let rbxlx_source = fs::File::open(&rbxlx_path)
-        .map_err(|error| Problem::IoError("read the place file", error))?;
+    let file_source = BufReader::new(
+        fs::File::open(&file_path)
+            .map_err(|error| Problem::IoError("read the place file", error))?,
+    );
     info!("Decoding place file, this is the longest part...");
-    let tree = rbx_xml::from_reader_default(&rbxlx_source).map_err(Problem::DecodeError)?;
+
+    let tree = match file_path
+        .extension()
+        .map(|extension| extension.to_string_lossy())
+    {
+        Some(Cow::Borrowed("rbxmx")) | Some(Cow::Borrowed("rbxlx")) => {
+            rbx_xml::from_reader_default(file_source).map_err(Problem::XMLDecodeError)
+        }
+        Some(Cow::Borrowed("rbxm")) | Some(Cow::Borrowed("rbxl")) => {
+            rbx_binary::from_reader_default(file_source).map_err(Problem::BinaryDecodeError)
+        }
+        _ => Err(Problem::InvalidFile),
+    }?;
 
     info!("Select the path to put your Rojo project in.");
     let root = PathBuf::from(match std::env::args().nth(2) {
         Some(text) => text,
-        None => match nfd::open_pick_folder(Some(&rbxlx_path.parent().unwrap().to_string_lossy()))
+        None => match nfd::open_pick_folder(Some(&file_path.parent().unwrap().to_string_lossy()))
             .map_err(|error| Problem::NFDError(error.to_string()))?
         {
             nfd::Response::Okay(path) => path,
@@ -110,7 +137,7 @@ fn routine() -> Result<(), Problem> {
         },
     });
 
-    let mut filesystem = FileSystem::from_root(root.join(rbxlx_path.file_stem().unwrap()).into());
+    let mut filesystem = FileSystem::from_root(root.join(file_path.file_stem().unwrap()).into());
 
     log_file.write().unwrap().replace(
         fs::File::create(root.join("rbxlx-to-rojo.log"))

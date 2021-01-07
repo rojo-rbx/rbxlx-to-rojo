@@ -1,0 +1,36 @@
+name: Build rbxlx-to-rojo
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+    branches:
+    - master
+jobs:
+  build_windows:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Build (All features)
+      run: |
+        cargo build --locked --release --all-features
+    - name: Upload selene
+      uses: actions/upload-artifact@v1
+      with:
+        name: rbxlx-to-rojo-windows
+        path: ./target/release/rbxlx-to-rojo.exe
+  build_mac:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install Rust
+      run: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+    - name: Build (All features)
+      run: |
+        source $HOME/.cargo/env
+        cargo build --locked --release --all-features
+    - name: Upload rbxlx-to-rojo
+      uses: actions/upload-artifact@v1
+      with:
+        name: rbxlx-to-rojo-macos
+        path: ./target/release/rbxlx-to-rojo

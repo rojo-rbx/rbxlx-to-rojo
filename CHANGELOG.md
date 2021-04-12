@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - 2021-04-11
+### Fixed
+- Fixed newer builds not being usable.
+
 ## [1.0.0] - 2021-01-06
 ### Added
 - Added support for .rbxl and .rbxm, and not just .rbxlx.

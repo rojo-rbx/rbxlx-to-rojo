@@ -89,11 +89,15 @@ impl InstructionReader for FileSystem {
                 let mut file = File::create(self.source.join(&filename)).unwrap_or_else(|error| {
                     panic!("can't create file {:?}: {:?}", filename, error)
                 });
-                file.write_all(&contents).expect("can't write file");
+                file.write_all(&contents).unwrap_or_else(|error| {
+                    panic!("can't write to file {:?} due to {:?}", filename, error)
+                });
             }
 
             Instruction::CreateFolder { folder } => {
-                fs::create_dir_all(self.source.join(folder)).expect("can't write folder");
+                fs::create_dir_all(self.source.join(&folder)).unwrap_or_else(|error| {
+                    panic!("can't write to folder {:?}: {:?}", folder, error)
+                });
             }
         }
     }

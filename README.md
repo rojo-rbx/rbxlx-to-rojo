@@ -12,6 +12,8 @@ If there aren't any scripts in the rbxlx file, rbxlx-to-rojo will return an erro
 
 Download the latest release of rbxlx-to-rojo here: https://github.com/rojo-rbx/rbxlx-to-rojo/releases
 ## Porting the game
+Although not required, check to see whether or not any instance names contain any of the following characters: `\/:*?"<>|`. This will result in generation halt on Windows because of file naming requirements. For any other OS, just be sure to check those specific file naming requirements before atempting to port your game.
+
 Before you can port your game into Rojo projects, you need a place/model file. If you have an existing game that isn't exported:
 
 - Go to studio, click on any place, and then click on File -> Save to file as.

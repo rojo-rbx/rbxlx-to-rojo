@@ -34,3 +34,18 @@ jobs:
       with:
         name: rbxlx-to-rojo-macos
         path: ./target/release/rbxlx-to-rojo
+  build_linux:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install Rust
+      run: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+    - name: Build (All features)
+      run: |
+        source $HOME/.cargo/env
+        cargo build --locked --release --all-features
+    - name: Upload rbxlx-to-rojo
+      uses: actions/upload-artifact@v1
+      with:
+        name: rbxlx-to-rojo-linux
+        path: ./target/release/rbxlx-to-rojo

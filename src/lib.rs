@@ -28,6 +28,23 @@ struct TreeIterator<'a, I: InstructionReader + ?Sized> {
     tree: &'a WeakDom,
 }
 
+fn check_if_local(child: &Instance) -> &'static str
+{
+	println!("{:?}", child.properties.get("RunContext"));
+	
+	// This is very bad, can someone refactor it
+	match child.properties.get("RunContext").expect("Non-scripts do not have the RunContext property!") {
+		Variant::Enum(value) => {
+			match value.to_u32() {
+				2 => {return ".client";}
+				_ => {return ".server";}
+			}
+		},
+		
+		_ => unreachable!(),
+	}
+}
+
 fn repr_instance<'a>(
     base: &'a Path,
     child: &'a Instance,
@@ -65,7 +82,7 @@ fn repr_instance<'a>(
 
         "Script" | "LocalScript" | "ModuleScript" => {
             let extension = match child.class.as_str() {
-                "Script" => ".server",
+                "Script" => check_if_local(child),
                 "LocalScript" => ".client",
                 "ModuleScript" => "",
                 _ => unreachable!(),
